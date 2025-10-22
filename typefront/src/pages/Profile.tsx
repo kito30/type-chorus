@@ -1,18 +1,29 @@
-import ProfilePicture from "../components/ProfilePicture"
+import BackgroundPicture from "../components/BackgroundPicture";
+import ProfilePictureWithModal from "../components/ProfilePictureWithModal";
+import "../styles/Profile.css";
 
 const Profile = () => {
-    return (
-        // changeable background picture
-        
-        // changeable profile picture
-        <ProfilePicture/>
+  return (
+    <div className="profile-page">
+      <div className="profile-column">
+        {/* changeable background picture */}
+        <BackgroundPicture />
 
-        // changeable username
+        {/* changeable profile picture */}
+        <ProfilePictureWithModal />
 
-        // highscore
+        <div className="divider"></div>
+        {/* changeable username */}
+        <div className="username">Your Username</div>
 
-        // other stats
-    )
-}
+        {/* highscore */}
+        <div className="highscore">Highscore: 12345</div>
 
-export default Profile
+        {/* other stats */}
+        <div className="stats">Wins: 10 | Losses: 2</div>
+      </div>
+    </div>
+  );
+};
+
+export default Profile;

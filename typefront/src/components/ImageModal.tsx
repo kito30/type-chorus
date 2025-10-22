@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "../styles/ProfilePicture.css";
+import "../styles/Profile.css";
 
 const DEFAULT_PIC =
   "https://cdn-icons-png.flaticon.com/512/847/847969.png";
@@ -9,6 +9,10 @@ interface ImageModalProps {
   initialUrl: string;
   onClose: () => void;
   onSave: (url: string) => void;
+  previewSize?: number;
+  previewHeight?: number;
+  previewWidth?: number;
+  promptText?: string;
 }
 
 const ImageModal: React.FC<ImageModalProps> = ({
@@ -16,6 +20,9 @@ const ImageModal: React.FC<ImageModalProps> = ({
   initialUrl,
   onClose,
   onSave,
+  previewHeight = 120, // default
+  previewWidth = 120,
+  promptText = 'Change Picture'
 }) => {
   const [inputUrl, setInputUrl] = useState<string>(initialUrl);
   const [previewUrl, setPreviewUrl] = useState<string>(initialUrl);
@@ -53,37 +60,50 @@ const ImageModal: React.FC<ImageModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <h2>Change Profile Picture</h2>
+    <div>
+      <div className="modal-screen-overlay"></div>
+      <div className="modal-overlay" onClick={onClose}>
+        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <h2>{promptText}</h2>
 
-        {/* Preview */}
-        <div className="modal-preview">
-          <img src={previewUrl} alt="Preview" className="profile-picture" />
-        </div>
+          <div
+            className="modal-preview"
+            style={{ width: previewWidth, height: previewHeight }}
+          >
+            <img
+              src={previewUrl}
+              alt="Preview"
+              className={
+                promptText.includes("Background")
+                  ? "background-preview-image"
+                  : "profile-preview-image"
+              }
+            />
 
-        {!isPreviewValid && (
-          <p className="error-text">
-            Invalid image URL — preview reverted to default.
-          </p>
-        )}
+          </div>
 
-        {/* Input */}
-        <input
-          type="text"
-          placeholder="Enter image URL..."
-          value={inputUrl}
-          onChange={(e) => setInputUrl(e.target.value)}
-        />
+          {!isPreviewValid && (
+            <p className="error-text">
+              Invalid image URL — preview reverted to default.
+            </p>
+          )}
 
-        {/* Buttons */}
-        <div className="modal-buttons">
-          <button className="cancel-btn" onClick={onClose}>
-            Cancel
-          </button>
-          <button className="save-btn" onClick={handleSave}>
-            Save
-          </button>
+          <p>Input a valid image url:</p>
+          <input
+            type="text"
+            placeholder="Enter image URL..."
+            value={inputUrl}
+            onChange={(e) => setInputUrl(e.target.value)}
+          />
+
+          <div className="modal-buttons">
+            <button className="cancel-btn" onClick={onClose}>
+              Cancel
+            </button>
+            <button className="save-btn" onClick={handleSave}>
+              Save
+            </button>
+          </div>
         </div>
       </div>
     </div>

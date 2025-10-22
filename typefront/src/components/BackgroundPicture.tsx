@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import ImageModal from "./ImageModal";
-import "../styles/ProfilePicture.css";
+import "../styles/Profile.css";
 
 const DEFAULT_PIC =
-  "https://cdn-icons-png.flaticon.com/512/847/847969.png";
+  "https://img.freepik.com/free-vector/overlapping-forms-wallpaper_52683-46441.jpg";
 
-const ProfilePictureWithModal: React.FC = () => {
+const BackgroundPicture: React.FC = () => {
   const [imageUrl, setImageUrl] = useState<string>(DEFAULT_PIC);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
@@ -14,10 +14,10 @@ const ProfilePictureWithModal: React.FC = () => {
   const handleSave = (newUrl: string) => setImageUrl(newUrl);
 
   return (
-    <div className="profile-container">
-      {/* Profile Picture */}
-      <div className="profile-picture-wrapper" onClick={openModal}>
-        <img src={imageUrl} alt="Profile" className="profile-picture" />
+    <div className="background-container">
+      {/* Background Picture */}
+      <div className="background-picture-wrapper" onClick={openModal}>
+        <img src={imageUrl} alt="Background" className="background-picture" />
       </div>
 
       {/* Modal */}
@@ -26,9 +26,12 @@ const ProfilePictureWithModal: React.FC = () => {
         initialUrl={imageUrl}
         onClose={closeModal}
         onSave={handleSave}
+        previewHeight={120}
+        previewWidth={200}
+        promptText="Change Background Picture"
       />
     </div>
   );
 };
 
-export default ProfilePictureWithModal;
+export default BackgroundPicture;
