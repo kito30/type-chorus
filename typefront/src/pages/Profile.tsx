@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import BackgroundPicture from "../components/BackgroundPicture";
-import ProfilePictureWithModal from "../components/ProfilePictureWithModal";
-import UsernameModal from "../components/UsernameModal";
+import BackgroundPicture from "../components/user_profile/BackgroundPicture";
+import ProfilePictureWithModal from "../components/user_profile/ProfilePictureWithModal";
+import UsernameModal from "../components/user_profile/UsernameModal";
 import "../styles/Profile.css";
 
 const Profile: React.FC = () => {

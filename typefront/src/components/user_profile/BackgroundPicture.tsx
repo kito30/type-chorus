@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import ImageModal from "./ImageModal";
-import "../styles/Profile.css";
+import "../../styles/Profile.css";
 
 const DEFAULT_PIC =
   "https://img.freepik.com/free-vector/overlapping-forms-wallpaper_52683-46441.jpg";
