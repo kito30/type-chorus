@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "../styles/Profile.css";
+import "../../styles/Profile.css";
 
 interface UsernameModalProps {
   isOpen: boolean;

@@ -1,0 +1,14 @@
+/* Global color variables */
+:root {
+  --color-primary-button: hsl(255,50%,50%);
+  --color-primary-button-hover: hsl(255,50%,60%);
+  --color-primary-contrast: #ffffff;
+  --color-background: #333333;
+  --color-input-background: #222222;
+  --color-surface: #1a1b22;
+  --color-text: #e6e6eb;
+  --color-muted: #9aa0a6;
+}
+
+
+

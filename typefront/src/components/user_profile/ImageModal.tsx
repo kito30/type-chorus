@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "../styles/Profile.css";
+import "../../styles/Profile.css";
 
 const DEFAULT_PIC =
   "https://cdn-icons-png.flaticon.com/512/847/847969.png";
