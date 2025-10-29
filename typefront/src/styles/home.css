@@ -1,11 +1,10 @@
-/* Greyish purple theme */
 :root {
-  --home-bg: #1f1b24;           /* deep grey-purple */
-  --home-surface: #2a2430;      /* surface card */
-  --home-text: #e6e1eb;         /* light text */
-  --home-muted: #aaa3b3;        /* muted text */
-  --home-accent: #7b6ba8;       /* purple */
-  --home-accent-hover: #8a7ac0; /* lighter purple */
+  --home-bg: #1f1b24;
+  --home-surface: #2a2430;
+  --home-text: #e6e1eb;
+  --home-muted: #aaa3b3;
+  --home-accent: #7b6ba8;
+  --home-accent-hover: #8a7ac0;
 }
 
 .home-root {

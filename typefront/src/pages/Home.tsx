@@ -11,7 +11,6 @@ const Home: React.FC = () => {
         <div className="brand">Type Chorus</div>
         <nav className="nav-actions">
           <Link to="/profile" className="icon-button" aria-label="Profile">
-            {/* simple profile glyph */}
             <span className="profile-circle" />
           </Link>
           <Link to="/login" className="primary-button">Login</Link>
@@ -27,7 +26,7 @@ const Home: React.FC = () => {
           <div className="search-box">
             <input
               className="search-input"
-              placeholder="Search (coming soon)"
+              placeholder="Search"
               autoFocus
             />
             <button className="secondary-button" onClick={() => setShowSearch(false)}>Close</button>
