@@ -1,4 +1,9 @@
-export default function HighlightButton(props) {
+interface HighlightButtonProps {
+    text: string;
+    onClick?: () => void;
+    className?: string;
+}
+export default function HighlightButton(props: HighlightButtonProps) {
     const {text, onClick, className = ""} = props;
     return (
         <div className={className}>
