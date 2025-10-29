@@ -1,38 +1,30 @@
-import React, { useState } from 'react'
+import React from 'react'
+import SearchBar from '../components/home/SearchBar'
 import { Link } from 'react-router-dom'
-import '../styles/home.css'
 
 const Home: React.FC = () => {
-  const [showSearch, setShowSearch] = useState(false)
-
   return (
-    <div className="home-root">
-      <header className="home-header">
-        <div className="brand">Type Chorus</div>
-        <nav className="nav-actions">
-          <Link to="/profile" className="icon-button" aria-label="Profile">
-            <span className="profile-circle" />
-          </Link>
-          <Link to="/login" className="primary-button">Login</Link>
-        </nav>
-      </header>
-
-      <main className="home-main">
-        {!showSearch ? (
-          <button className="search-toggle" onClick={() => setShowSearch(true)}>
-            Search
-          </button>
-        ) : (
-          <div className="search-box">
-            <input
-              className="search-input"
-              placeholder="Search"
-              autoFocus
+    <div className=" h-screen bg-(--color-home-bg) text-(--color-text) overflow-x-hidden">
+      <header className="flex items-center justify-between w-full px-6 py-4 bg-(--color-home-bg) text-(--color-text)">
+        <div className="pl-4">
+          <Link to="/" className="text-(--color-text) font-semibold hover:text-gray-300">Type Chorus</Link>
+        </div>
+        <div className="">
+          <Link 
+            to="/profile" 
+            className="flex items-center justify-center rounded-full transition-all duration-200 ease-in-out hover:scale-150 hover:opacity-80 hover:-translate-x-3"
+          >
+            <img 
+              src="https://cdn-icons-png.flaticon.com/512/847/847969.png" 
+              alt="Profile" 
+              className="w-10 h-10 object-cover rounded-full"
             />
-            <button className="secondary-button" onClick={() => setShowSearch(false)}>Close</button>
-          </div>
-        )}
-      </main>
+          </Link>
+        </div>
+      </header>
+      <div className="flex items-center justify-center ">
+        <SearchBar />
+      </div>
     </div>
   )
 }

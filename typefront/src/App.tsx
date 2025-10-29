@@ -1,18 +1,15 @@
-
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
-import Profile from './pages/Profile'
+import { Routes, Route } from 'react-router-dom'
 import Home from './pages/Home'
-import LoginCard from './components/login_profile/logincard'
+import Profile from './pages/Profile'
+import Login from './pages/Login'
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/login" element={<LoginCard />} />
-      </Routes>
-    </BrowserRouter>
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/profile" element={<Profile />} />
+      <Route path="/login" element={<Login />} />
+    </Routes>
   )
 }
 
