@@ -1,0 +1,57 @@
+/* Greyish purple theme */
+:root {
+  --home-bg: #1f1b24;           /* deep grey-purple */
+  --home-surface: #2a2430;      /* surface card */
+  --home-text: #e6e1eb;         /* light text */
+  --home-muted: #aaa3b3;        /* muted text */
+  --home-accent: #7b6ba8;       /* purple */
+  --home-accent-hover: #8a7ac0; /* lighter purple */
+}
+
+.home-root {
+  min-height: 100dvh;
+  background: var(--home-bg);
+  color: var(--home-text);
+  display: flex;
+  flex-direction: column;
+}
+
+.home-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+}
+
+.brand {
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.nav-actions { display: flex; gap: 12px; align-items: center; }
+
+.icon-button { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+.profile-circle { width: 32px; height: 32px; border-radius: 50%; background: var(--home-accent); display: inline-block; }
+
+.primary-button, .secondary-button { 
+  border: none; cursor: pointer; text-decoration: none; color: var(--home-text);
+  background: var(--home-accent); padding: 8px 14px; border-radius: 8px;
+}
+.primary-button:hover { background: var(--home-accent-hover); }
+.secondary-button { background: transparent; border: 1px solid var(--home-muted); }
+.secondary-button:hover { border-color: var(--home-text); }
+
+.home-main { flex: 1; display: grid; place-items: center; padding: 24px; }
+
+.search-toggle {
+  background: var(--home-accent);
+  color: var(--home-text);
+  border: none; border-radius: 999px; padding: 12px 20px; cursor: pointer;
+}
+.search-toggle:hover { background: var(--home-accent-hover); }
+
+.search-box { display: flex; gap: 10px; background: var(--home-surface); padding: 12px; border-radius: 12px; width: min(640px, 90%); }
+.search-input { flex: 1; background: transparent; color: var(--home-text); border: 1px solid var(--home-muted); border-radius: 8px; padding: 10px 12px; outline: none; }
+.search-input:focus { border-color: var(--home-accent); }
+
+
