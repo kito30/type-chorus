@@ -8,4 +8,16 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  server: {
+    proxy: {
+      '/api/lrc': {
+        target: 'https://lrclib.net',
+        changeOrigin: true,
+        headers: {
+          'User-Agent': `${process.env.VITE_APP_NAME ?? 'TypeChorus'} v${process.env.VITE_APP_VERSION ?? 'dev'}`,
+        },
+        rewrite: (path) => path.replace(/^\/api\/lrc/, '/api'),
+      },
+    },
+  },
 })
