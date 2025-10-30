@@ -1,5 +1,5 @@
 import React from 'react'
-import SearchBar from '../components/home/SearchBar'
+import Search from '../components/search/Search'
 import { Link } from 'react-router-dom'
 
 const Home: React.FC = () => {
@@ -24,7 +24,7 @@ const Home: React.FC = () => {
       </header>
       <main className="flex-1 flex flex-col items-center justify-center ">
           <div className='py-2'>Type Front</div>
-          <SearchBar />
+          <Search />
       </main>
     </div>
   );
