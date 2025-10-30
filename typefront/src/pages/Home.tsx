@@ -1,7 +1,7 @@
 import React from 'react'
 import Search from '../components/search/Search'
 import { Link } from 'react-router-dom'
-
+import logoUrl from '../../assets/logo.svg';
 const Home: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-(--color-home-bg) text-(--color-text)">
@@ -22,8 +22,9 @@ const Home: React.FC = () => {
           </Link>
         </div>
       </header>
-      <main className="flex-1 flex flex-col items-center justify-center ">
-          <div className='py-2'>Type Front</div>
+   
+      <main className="flex-1 flex flex-col items-center justify-center">
+          <img src={logoUrl} alt="Logo" className="w-2xl" />
           <Search />
       </main>
     </div>

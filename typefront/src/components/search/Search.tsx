@@ -11,7 +11,7 @@ export default function SearchBar() {
   const [error, setError] = useState<string | null>(null);
   const controllerRef = useRef<AbortController | null>(null);
   const debouncedQuery = useDebounce(query, 300);
-
+  console.log('results', results);
   useEffect(() => {
     if (!debouncedQuery || debouncedQuery.trim().length < 2) {
       setResults([]);
