@@ -22,13 +22,9 @@ const Home: React.FC = () => {
           </Link>
         </div>
       </header>
-      <main className="flex-1 grid place-items-center">
-        <div className="max-w-screen max-h-full overflow-auto">
-          <div className="flex flex-col items-center gap-4">
-            <div>Type Front</div>
-            <SearchBar />
-          </div>
-        </div>
+      <main className="flex-1 flex flex-col items-center justify-center ">
+          <div className='py-2'>Type Front</div>
+          <SearchBar />
       </main>
     </div>
   );
