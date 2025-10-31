@@ -13,7 +13,7 @@ export default function SearchResults({
   return (
     <>
       {(isLoading || error || (debouncedQuery && debouncedQuery.trim().length >= 2)) && (
-        <div className="mt-3 rounded-xl border border-gray-200 bg-white text-gray-900 shadow-sm overflow-hidden">
+        <div className="mt-3 rounded-xl border border-gray-200 bg-white text-gray-900 shadow-sm max-h-96 overflow-auto">
           {isLoading && (
             <div className="px-4 py-3 text-sm">Searching…</div>
           )}
