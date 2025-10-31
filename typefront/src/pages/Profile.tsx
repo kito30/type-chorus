@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import BackgroundPicture from "../components/user_profile/BackgroundPicture";
 import ProfilePictureWithModal from "../components/user_profile/ProfilePictureWithModal";
 import UsernameModal from "../components/user_profile/UsernameModal";
@@ -8,9 +8,19 @@ const Profile: React.FC = () => {
   const [username, setUsername] = useState<string>("Your Username");
   const [isUsernameModalOpen, setIsUsernameModalOpen] = useState<boolean>(false);
 
+  useEffect(() => {
+    const storedUsername = localStorage.getItem("profile.username");
+    if (storedUsername) {
+      setUsername(storedUsername);
+    }
+  }, []);
+
   const openUsernameModal = () => setIsUsernameModalOpen(true);
   const closeUsernameModal = () => setIsUsernameModalOpen(false);
-  const handleUsernameSave = (newUsername: string) => setUsername(newUsername);
+  const handleUsernameSave = (newUsername: string) => {
+    setUsername(newUsername);
+    localStorage.setItem("profile.username", newUsername);
+  };
 
   return (
     <div className="profile-page">
