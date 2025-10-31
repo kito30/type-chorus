@@ -12,8 +12,11 @@
   transform: translate(-50%, -50%);
   background-color: rgb(36, 40, 42);
   width: 60em;
-  height: 100vh;
+  max-width: 96vw;
+  height: 90vh;
+  border-radius: 16px;
   overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
 }
 
 /* Background */
@@ -24,7 +27,7 @@
 }
 
 .profile-page .background-picture {
-  height: 50vh;
+  height: 45vh;
   width: 100%;
   object-fit: cover;
   z-index: 1;
@@ -85,9 +88,8 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 14em;
-  height: 10em;
-  padding: 2em 1em 6em 2em;
+  width: min(520px, 92vw);
+  padding: 20px;
   transform: translate(-50%, -50%);
   background-color: rgba(48, 53, 56);
   color: white;
@@ -95,9 +97,29 @@
   justify-content: center;
   align-content: center;
   z-index: 100;
-  border-radius: 5%;
+  border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   animation: fadeIn 0.1s ease-in forwards;
+}
+
+.modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
+
+.modal-content h2 {
+  margin: 0 0 4px 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.modal-preview {
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .background-preview-image {
@@ -115,10 +137,51 @@
   border: none;
 }
 
+.modal-content input[type="text"] {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  outline: none;
+}
+
+.modal-content input[type="text"]::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.modal-buttons .cancel-btn,
+.modal-buttons .save-btn {
+  appearance: none;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.modal-buttons .cancel-btn {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+.modal-buttons .save-btn {
+  background: #4f46e5;
+  color: #fff;
+}
+
 .divider {
   position: relative;
   width: 100%;
-  height: 10%;
+  height: 12%;
   background-color: rgba(48, 53, 56);
   z-index: 10;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
@@ -130,7 +193,7 @@
   display: flex;
   align-items: center;
   gap: 1em;
-  padding: 0 0 1% 5%;
+  padding: 10px 20px;
   flex-wrap: wrap;
 }
 
@@ -188,7 +251,7 @@
 /* make profile page responsive on small screens */
 @media (max-width: 800px) {
   .profile-row {
-    padding: 0 0 2% 12%;
+    padding: 10px 16px;
   }
 }
 

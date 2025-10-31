@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ImageModal from "./ImageModal";
 import "../../styles/Profile.css";
 
@@ -9,9 +9,17 @@ const BackgroundPicture: React.FC = () => {
   const [imageUrl, setImageUrl] = useState<string>(DEFAULT_PIC);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
+  useEffect(() => {
+    const stored = localStorage.getItem("profile.backgroundUrl");
+    if (stored) setImageUrl(stored);
+  }, []);
+
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
-  const handleSave = (newUrl: string) => setImageUrl(newUrl);
+  const handleSave = (newUrl: string) => {
+    setImageUrl(newUrl);
+    localStorage.setItem("profile.backgroundUrl", newUrl);
+  };
 
   return (
     <div className="background-container">

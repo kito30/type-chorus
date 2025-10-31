@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom'
 import { searchSongs } from '../../services/lrc';
 import type { SongSearchResult } from '../../types/music';
 import SearchInput from './SearchInput';
@@ -6,6 +7,7 @@ import SearchResults from './SearchResults';
 import { fetchVideoInfo } from '../../services/videofetch';
 
 export default function SearchBar() {
+  const navigate = useNavigate()
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SongSearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -45,7 +47,8 @@ export default function SearchBar() {
         error={error}
         results={results}
         debouncedQuery={debouncedQuery}
-        onSelect={r => fetchVideoInfo(r) }
+        onSelect={r => navigate(`/game/${r.id}`)}
+        // onSelect={r => fetchVideoInfo(r) }
       />
     </div>
   );

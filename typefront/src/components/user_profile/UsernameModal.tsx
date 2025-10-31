@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "../../styles/Profile.css";
 
 interface UsernameModalProps {
@@ -15,6 +15,12 @@ const UsernameModal: React.FC<UsernameModalProps> = ({
   onSave,
 }) => {
   const [newUsername, setNewUsername] = useState<string>(initialUsername);
+
+  useEffect(() => {
+    if (isOpen) {
+      setNewUsername(initialUsername);
+    }
+  }, [isOpen, initialUsername]);
 
   const handleSave = () => {
     if (newUsername.trim()) {
