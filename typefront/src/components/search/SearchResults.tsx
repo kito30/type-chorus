@@ -1,6 +1,8 @@
 import type { SongSearchResult } from '../../types/music';
 import MusicSearchCard from './MusicSearchCard';
 
+
+
 export default function SearchResults({
   isLoading, error, results, debouncedQuery, onSelect,
 }: {

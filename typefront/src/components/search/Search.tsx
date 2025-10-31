@@ -3,6 +3,7 @@ import { searchSongs } from '../../services/lrc';
 import type { SongSearchResult } from '../../types/music';
 import SearchInput from './SearchInput';
 import SearchResults from './SearchResults';
+import { fetchVideoInfo } from '../../services/videofetch';
 
 export default function SearchBar() {
   const [query, setQuery] = useState('');
@@ -11,7 +12,6 @@ export default function SearchBar() {
   const [error, setError] = useState<string | null>(null);
   const controllerRef = useRef<AbortController | null>(null);
   const debouncedQuery = useDebounce(query, 300);
-  console.log('results', results);
   useEffect(() => {
     if (!debouncedQuery || debouncedQuery.trim().length < 2) {
       setResults([]);
@@ -45,7 +45,7 @@ export default function SearchBar() {
         error={error}
         results={results}
         debouncedQuery={debouncedQuery}
-        onSelect={r => console.log('select', r)}
+        onSelect={r => fetchVideoInfo(r) }
       />
     </div>
   );

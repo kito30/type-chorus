@@ -1,6 +1,8 @@
 {
+  "type": "module",
   "dependencies": {
     "express": "^5.1.0",
-    "expressjs": "^1.0.1"
+    "expressjs": "^1.0.1",
+    "yt-search": "^2.13.1"
   }
 }

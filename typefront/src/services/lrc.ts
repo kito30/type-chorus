@@ -17,7 +17,7 @@ export async function searchSongs(params: {
   album_name?: string
   duration?: number
 }): Promise<SongSearchResult[]> {
-  const url = new URL('/api/search', window.location.origin)
+  const url = new URL('/api/lrc/search', window.location.origin)
   for (const [key, value] of Object.entries(params)) {
     if (value !== undefined && value !== null && String(value).length > 0) {
       url.searchParams.set(key, String(value))
@@ -41,7 +41,7 @@ export async function searchSongs(params: {
 }
 
 export async function getLyricsById(id: number): Promise<LyricsRecord> {
-  const url = new URL(`/api/get/${id}`, window.location.origin)
+  const url = new URL(`/api/lrc/get/${id}`, window.location.origin)
   const res = await fetch(url.toString(), { headers: buildHeaders() })
   if (!res.ok) throw new Error(`Get by id failed (${res.status})`)
   return (await res.json()) as LyricsRecord
@@ -53,7 +53,7 @@ export async function getLyricsBySignature(params: {
   album_name: string
   duration: number
 }): Promise<LyricsRecord> {
-  const url = new URL('/api/get', window.location.origin)
+  const url = new URL('/api/lrc/get', window.location.origin)
   for (const [key, value] of Object.entries(params)) {
     url.searchParams.set(key, String(value))
   }
@@ -68,7 +68,7 @@ export async function getLyricsBySignatureCached(params: {
   album_name: string
   duration: number
 }): Promise<LyricsRecord> {
-  const url = new URL('/api/get-cached', window.location.origin)
+  const url = new URL('/api/lrc/get-cached', window.location.origin)
   for (const [key, value] of Object.entries(params)) {
     url.searchParams.set(key, String(value))
   }

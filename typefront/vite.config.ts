@@ -9,10 +9,15 @@ export default defineConfig({
     tailwindcss(),
   ],
   server: {
-    proxy: {
-      '/api': {
+     proxy: {
+      '/api/youtube': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+      '/api/lrc': {
         target: 'https://lrclib.net',
         changeOrigin: true,
+        rewrite: p => p.replace(/^\/api\/lrc/, '/api'),
         headers: {
           'User-Agent': `${process.env.VITE_APP_NAME ?? 'TypeChorus'} v${process.env.VITE_APP_VERSION ?? 'dev'}`,
         },
