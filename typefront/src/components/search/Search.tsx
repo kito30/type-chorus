@@ -55,7 +55,7 @@ export default function SearchBar() {
             const videoInfo = await fetchVideoInfo(r);
             if (videoInfo) {
               setIsLoadingVideo(false);
-              navigate('/gamepage', { state: { videoId: videoInfo.videoId } });
+              navigate(`/song/${r.id}`, { state: { videoId: videoInfo.videoId } });
             }
           } catch (error) {
             console.error('Failed to fetch video:', error);

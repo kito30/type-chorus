@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
-import { getLyricsById } from '../services/lrc'
-import type { LyricsRecord } from '../types/music'
+import { useNavigate } from 'react-router-dom'
+import { getLyricsById } from '../../services/lrc'
+import type { LyricsRecord } from '../../types/music'
 
 type Phase = 'idle' | 'countdown' | 'playing' | 'finished'
 
-export default function Game() {
-  const { id } = useParams()
+export default function Game({ id }: { id: number }) {
   const navigate = useNavigate()
   const [record, setRecord] = useState<LyricsRecord | null>(null)
   const [phase, setPhase] = useState<Phase>('idle')

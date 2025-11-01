@@ -1,55 +1,11 @@
 import express from 'express'
-import yts from 'yt-search'
+import apiRoutes from './routes.js'
+
 const app = express()
 const port = 3000
 
-app.get('/api/youtube/search', async (req, res) => {
-  const title = String(req.query.title || '').trim();
-  const artist = String(req.query.artist || '').trim();
+app.use('/api', apiRoutes)
 
-  if (!title && !artist) return res.status(400).json({ error: 'title or artist required' });
-   
-  const query = [artist, title].filter(Boolean).join(' ');
-
-  try {
-    const result = await yts(query);
-    let vids = result.videos.slice(0, 10) || [];
-    const norm = (s) => s.toLowerCase();
-    const wantArtist = norm(artist);
-    const wantTitle = norm(title);
-    vids = vids.sort((a, b) => {
-      // First priority: Check if video author matches artist
-      const aArtistMatch = wantArtist && norm(a.author.name).includes(wantArtist) ? 1 : 0;
-      const bArtistMatch = wantArtist && norm(b.author.name).includes(wantArtist) ? 1 : 0;
-      
-      // Second priority: Views
-      const viewsDiff = b.views - a.views;
-      
-      // Third priority: Title score
-      const aScore =
-        (wantArtist && norm(a.title).includes(wantArtist) ? 1 : 0) +
-        (wantTitle && norm(a.title).includes(wantTitle) ? 1 : 0);
-      const bScore =
-        (wantArtist && norm(b.title).includes(wantArtist) ? 1 : 0) +
-        (wantTitle && norm(b.title).includes(wantTitle) ? 1 : 0);
-      
-      // Sort by: artist match first, then views, then title score
-      return (bArtistMatch - aArtistMatch) || viewsDiff || (bScore - aScore);
-    });
-    const vid = vids[0] || null;
-    return res.json({
-      videoId: vid.videoId,
-      title: vid.title,
-      channel: vid.author.name,
-      duration: vid.duration.seconds,
-      queryUsed: query,
-    })
-  }
-  catch (e) {
-    console.error(e);
-    return res.status(502).json({ error: 'yt-search failed' });
-  }
-})
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
