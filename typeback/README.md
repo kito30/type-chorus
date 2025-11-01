@@ -5,7 +5,7 @@ This is the Express.js backend for TypeChorus. It provides:
 - User registration and login with JWT
 - Protected `/api/me` endpoint
 - YouTube search helper at `/api/youtube/search`
-- File-based storage (lowdb JSON) for easy local development
+- MongoDB storage via Mongoose
 
 ## Quick start (Windows PowerShell)
 
@@ -41,7 +41,7 @@ PORT=3000
 FRONTEND_ORIGIN=http://localhost:5173
 JWT_SECRET=replace_me_in_prod
 JWT_TTL=7d
-DATABASE_FILE=./data/db.json
+MONGODB_URI=mongodb://127.0.0.1:27017/typechorus
 ```
 
 ## API
@@ -54,7 +54,7 @@ DATABASE_FILE=./data/db.json
 
 ## Notes
 
-- Storage uses a simple JSON file via lowdb for easy setup in class environments. You can later swap it for SQLite or Postgres without changing routes.
+- Storage uses MongoDB through Mongoose. You can point `MONGODB_URI` to Atlas or a local server.
 - CORS is restricted to the Vite dev server origin by default (`http://localhost:5173`).
 
 ## Troubleshooting

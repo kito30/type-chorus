@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import { getDb } from '../db.js';
+import { User } from '../models/User.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_only_change_me';
 const TOKEN_TTL = process.env.JWT_TTL || '7d';
@@ -16,12 +16,11 @@ export async function authMiddleware(req, res, next) {
     const token = parts[1];
     try {
       const decoded = jwt.verify(token, JWT_SECRET);
-      // fetch fresh user data from lowdb
-      const db = await getDb();
-      const row = db.data.users.find(u => u.id === decoded.sub);
+      // fetch fresh user data from MongoDB
+      const row = await User.findById(decoded.sub).lean();
       if (!row) return res.status(401).json({ error: 'user not found' });
-      const { password_hash, ...safeUser } = row;
-      req.user = safeUser;
+      const { password_hash, _id, ...rest } = row;
+      req.user = { id: _id.toString(), ...rest };
       return next();
     } catch (e) {
       return res.status(401).json({ error: 'invalid token' });

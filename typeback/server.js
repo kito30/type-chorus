@@ -4,6 +4,7 @@ import cors from 'cors'
 import yts from 'yt-search'
 import { authRouter } from './routes/authRoutes.js'
 import { authMiddleware } from './utils/auth.js'
+import { connectDb } from './db.js'
 
 const app = express()
 const port = process.env.PORT ? Number(process.env.PORT) : 3000
@@ -67,6 +68,17 @@ app.get('/api/youtube/search', async (req, res) => {
     return res.status(502).json({ error: 'yt-search failed' });
   }
 })
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
+// Start after DB connects
+const start = async () => {
+  try {
+    await connectDb();
+    app.listen(port, () => {
+      console.log(`API server listening on http://localhost:${port}`)
+    })
+  } catch (err) {
+    console.error('Failed to start server:', err)
+    process.exit(1)
+  }
+}
+
+start()
