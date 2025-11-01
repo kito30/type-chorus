@@ -1,9 +1,24 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { createYouTubeController } from './videofunction';
 
-export default function VideoController({ iframe }: { iframe: HTMLIFrameElement }) {
+export default function VideoController({ iframe, isLoaded }: { iframe: HTMLIFrameElement; isLoaded?: boolean }) {
+    // Load saved volume from localStorage, default to 50
+    const [volume, setVolume] = useState(() => {
+        const saved = localStorage.getItem('video.volume');
+        return saved ? Number(saved) : 50;
+    });
 
-    const [volume, setVolume] = useState(50);
+    const controller = useMemo(() => createYouTubeController(iframe), [iframe]);
+
+    // Set initial volume when iframe is loaded and ready
+    useEffect(() => {
+        if (controller && volume !== undefined && isLoaded) {
+            const timer = setTimeout(() => {
+                controller.setVolume(volume);
+            }, 200);
+            return () => clearTimeout(timer);
+        }
+    }, [controller, volume, isLoaded]); // Run when iframe is loaded
 
     const play = () => controller.play();
     const pause = () => controller.pause();
@@ -12,8 +27,8 @@ export default function VideoController({ iframe }: { iframe: HTMLIFrameElement 
     const onVolumeChange = (v: number) => {
         setVolume(v);
         controller.setVolume(v);
+        localStorage.setItem('video.volume', String(v));
     };
-    const controller = useMemo(() => createYouTubeController(iframe), [iframe]);
 
     return (
         <div className="mt-2 flex items-center gap-2">

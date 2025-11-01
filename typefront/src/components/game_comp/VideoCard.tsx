@@ -4,6 +4,7 @@ import VideoController from './VideoController';
 export default function VideoCard({ videoId }: { videoId: string }) {
     const iframeRef = useRef<HTMLIFrameElement | null>(null);
     const [iframeEl, setIframeEl] = useState<HTMLIFrameElement | null>(null);
+    const [iframeLoaded, setIframeLoaded] = useState(false);
     const baseUrl = `https://www.youtube.com/embed/${videoId}`;
     const params = new URLSearchParams({
         rel: '0',                 // limit related videos to same channel
@@ -32,8 +33,9 @@ export default function VideoCard({ videoId }: { videoId: string }) {
                 title="YouTube video"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen={false}
+                onLoad={() => setIframeLoaded(true)}
             />
-            {iframeEl && <VideoController iframe={iframeEl} />}
+            {iframeEl && <VideoController iframe={iframeEl} isLoaded={iframeLoaded} />}
         </div>
     )
 }
