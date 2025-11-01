@@ -1,12 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { getLyricsById } from '../../services/lrc'
 import type { LyricsRecord } from '../../types/music'
 
 type Phase = 'idle' | 'countdown' | 'playing' | 'finished'
 
 export default function Game({ id }: { id: number }) {
-  const navigate = useNavigate()
   const [record, setRecord] = useState<LyricsRecord | null>(null)
   const [phase, setPhase] = useState<Phase>('idle')
   const [lines, setLines] = useState<string[]>([])
@@ -60,13 +58,7 @@ export default function Game({ id }: { id: number }) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-(--color-home-bg) text-(--color-text)">
-      <header className="flex items-center justify-between w-full px-6 py-4">
-        <button className="text-(--color-text) hover:opacity-80" onClick={() => navigate('/')}>← Back</button>
-        <div className="text-sm opacity-80">{record ? record.artistName : ''}</div>
-      </header>
-
-      <main className="flex-1 w-full max-w-5xl mx-auto px-6 py-6">
+    <div className="w-full max-w-5xl mx-auto px-6 py-6">
         {isLoading && <div className="text-center">Loading…</div>}
         {error && <div className="text-center text-red-500">{error}</div>}
         {!isLoading && !error && record && (
@@ -110,7 +102,6 @@ export default function Game({ id }: { id: number }) {
             )}
           </div>
         )}
-      </main>
     </div>
   )
 }
