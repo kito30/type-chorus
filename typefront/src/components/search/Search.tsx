@@ -48,7 +48,7 @@ export default function SearchBar() {
         results={results}
         debouncedQuery={debouncedQuery}
         onSelect={r => navigate(`/game/${r.id}`)}
-        // onSelect={r => fetchVideoInfo(r) }
+        //onSelect={r => fetchVideoInfo(r) }
       />
     </div>
   );

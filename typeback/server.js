@@ -18,17 +18,23 @@ app.get('/api/youtube/search', async (req, res) => {
     const wantArtist = norm(artist);
     const wantTitle = norm(title);
     vids = vids.sort((a, b) => {
-    // comparing each videos search result if the score is higher the put it in front
+      // First priority: Check if video author matches artist
+      const aArtistMatch = wantArtist && norm(a.author.name).includes(wantArtist) ? 1 : 0;
+      const bArtistMatch = wantArtist && norm(b.author.name).includes(wantArtist) ? 1 : 0;
+      
+      // Second priority: Views
+      const viewsDiff = b.views - a.views;
+      
+      // Third priority: Title score
       const aScore =
         (wantArtist && norm(a.title).includes(wantArtist) ? 1 : 0) +
         (wantTitle && norm(a.title).includes(wantTitle) ? 1 : 0);
       const bScore =
         (wantArtist && norm(b.title).includes(wantArtist) ? 1 : 0) +
         (wantTitle && norm(b.title).includes(wantTitle) ? 1 : 0);
-      return (
-        (bScore - aScore) || 
-        (b.views - a.views) // sort the views also
-      );
+      
+      // Sort by: artist match first, then views, then title score
+      return (bArtistMatch - aArtistMatch) || viewsDiff || (bScore - aScore);
     });
     const vid = vids[0] || null;
     return res.json({
