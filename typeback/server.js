@@ -1,7 +1,30 @@
+import 'dotenv/config'
 import express from 'express'
+import cors from 'cors'
 import yts from 'yt-search'
+import { authRouter } from './routes/authRoutes.js'
+import { authMiddleware } from './utils/auth.js'
+
 const app = express()
-const port = 3000
+const port = process.env.PORT ? Number(process.env.PORT) : 3000
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || 'http://localhost:5173'
+
+// Middleware
+app.use(cors({ origin: FRONTEND_ORIGIN }))
+app.use(express.json())
+
+// Health
+app.get('/api/health', (_req, res) => {
+  res.json({ status: 'ok' })
+})
+
+// Auth
+app.use('/api/auth', authRouter)
+
+// Protected current-user route
+app.get('/api/me', authMiddleware, (req, res) => {
+  res.json({ user: req.user })
+})
 
 app.get('/api/youtube/search', async (req, res) => {
   const title = String(req.query.title || '').trim();
