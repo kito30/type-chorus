@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { createYouTubeController } from './videofunction';
+import { createYouTubeController } from './gamefunction/videofunction';
 
 export default function VideoController({ iframe, isLoaded }: { iframe: HTMLIFrameElement; isLoaded?: boolean }) {
     // Load saved volume from localStorage, default to 50
@@ -38,7 +38,7 @@ export default function VideoController({ iframe, isLoaded }: { iframe: HTMLIFra
             <button className="px-3 py-1 rounded bg-green-600 text-white" onClick={unmute}>Unmute</button>
             <div className="flex items-center gap-2 ml-3">
                 <span className="text-sm text-white/80">Vol</span>
-                <input
+                <input className="w-20 sm:w-32 md:w-40"
                     type="range"
                     min={0}
                     max={100}

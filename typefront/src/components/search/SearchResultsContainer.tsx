@@ -12,7 +12,7 @@ export default function SearchResultsContainer({
   error: string | null;
   results: SongSearchResult[];
   debouncedQuery: string;
-  onSelect: (r: SongSearchResult) => void;
+  onSelect: (s: SongSearchResult) => void;
 }) {
   const shouldShowContainer = isLoading || error || (debouncedQuery && debouncedQuery.trim().length >= 2);
   

@@ -1,40 +1,56 @@
 
 .profile-page {
   width: 100%;
-  height: 100vh;
+  min-height: 100vh;
   background-color: rgb(27, 27, 27);
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 .profile-column {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  position: relative;
+  margin: 0 auto;
   background-color: rgb(36, 40, 42);
-  width: 60em;
-  max-width: 96vw;
-  height: 90vh;
+  width: 100%;
+  max-width: 60em;
+  min-height: calc(100vh - 40px);
   border-radius: 16px;
-  overflow: hidden;
+  overflow-y: auto;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
 }
 
-/* Background */
+.profile-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 24px 20px 10px 20px;
+}
+
+.profile-title {
+  color: #fff;
+  letter-spacing: 6px;
+  font-size: 28px;
+  margin: 0;
+}
+
+.profile-subtitle {
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+}
+
+.profile-avatar-block {
+  margin-top: 8px;
+}
+
 .profile-page .background-picture-wrapper {
   background-color: #ffffff;
   display: flex;
   transition: transform 0.2s ease-in-out;
 }
 
-.profile-page .background-picture {
-  height: 45vh;
-  width: 100%;
-  object-fit: cover;
-  z-index: 1;
-  transition: opacity 0.2s ease-in-out;
-}
-
-/* pop and whiten on hover */
 .background-picture-wrapper:hover {
   transform: scale(1.02)
 }
@@ -42,7 +58,6 @@
   opacity: 0.8;
 }
 
-/* Profile Image */
 .profile-page .profile-picture-wrapper {
   z-index: 20;
   background-color: #ffffff;
@@ -60,7 +75,6 @@
   transition: opacity 0.2s ease-in-out;
 }
 
-/* pop and whiten on hover */
 .profile-picture:hover {
   opacity: 0.8;
 }
@@ -68,7 +82,6 @@
   transform: scale(1.05);
 }
 
-/* Modal */
 .modal-screen-overlay {
   position: fixed;
   top: 0;
@@ -178,23 +191,252 @@
   color: #fff;
 }
 
-.divider {
-  position: relative;
-  width: 100%;
-  height: 12%;
-  background-color: rgba(48, 53, 56);
-  z-index: 10;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+.profile-top-section {
   display: flex;
-  align-items: center;
+  gap: 32px;
+  padding: 24px 32px;
+  align-items: flex-start;
 }
 
-.profile-row {
+.profile-avatar-left {
+  flex-shrink: 0;
+}
+
+.profile-avatar-left .profile-picture-wrapper {
+  width: 180px;
+  height: 180px;
+}
+
+.profile-avatar-left .profile-picture {
+  width: 180px;
+  height: 180px;
+}
+
+.profile-details-right {
+  flex: 1;
+  min-width: 0;
+}
+
+.section-header {
+  color: #fff;
+  margin: 0 0 16px 0;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.profile-details-right h3 {
+  color: #fff;
+  margin: 0 0 16px 0;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail-row {
   display: flex;
   align-items: center;
-  gap: 1em;
-  padding: 10px 20px;
-  flex-wrap: wrap;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 14px 16px;
+  border-radius: 12px;
+}
+
+.detail-label {
+  color: rgba(255, 255, 255, 0.75);
+  font-weight: 500;
+  min-width: 100px;
+}
+
+.detail-value {
+  color: #fff;
+  flex: 1;
+}
+
+.link-btn {
+  appearance: none;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.link-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.profile-recent-section {
+  padding: 32px;
+  padding-top: 24px;
+}
+
+.recent-title {
+  color: #fff;
+  margin: 0 0 20px 0;
+  font-size: 26px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.recent-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  color: #fff;
+  padding: 24px;
+  transition: all 0.3s ease;
+}
+
+.recent-card.spotlight {
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.15), rgba(139, 92, 246, 0.15));
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.recent-card.spotlight:not(.muted-text) {
+  cursor: pointer;
+}
+
+.recent-card.spotlight:not(.muted-text):hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.recent-song-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.recent-song-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.recent-song-artist {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.recent-song-album {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.recent-play-arrow {
+  position: absolute;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 32px;
+  color: rgba(255, 255, 255, 0.6);
+  transition: transform 0.2s, color 0.2s;
+}
+
+.recent-card.spotlight:not(.muted-text):hover .recent-play-arrow {
+  transform: translateY(-50%) translateX(4px);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.recent-card.spotlight {
+  position: relative;
+}
+
+.recent-subtitle {
+  margin-top: 8px;
+  font-size: 14px;
+  opacity: 0.6;
+}
+
+.profile-highest-scores-section {
+  padding: 32px;
+  padding-top: 24px;
+}
+
+.highest-scores-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.score-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 20px 24px;
+  transition: all 0.3s ease;
+}
+
+.score-card.spotlight {
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.15), rgba(139, 92, 246, 0.15));
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+
+.score-card.spotlight:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.score-rank {
+  font-size: 20px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  min-width: 50px;
+}
+
+.score-song-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.score-song-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.score-song-artist {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.score-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  min-width: 60px;
+  text-align: right;
+}
+
+.muted-text {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.pill-field {
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  color: #fff;
+  width: 100%;
 }
 
 .username-wrapper {
@@ -218,7 +460,6 @@
   opacity: 0.8;
 }
 
-/* Text styling */
 .username,
 .highscore,
 .stats {
@@ -229,7 +470,6 @@
   margin-top: 10px;
 }
 
-/* Keyframes */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -248,15 +488,58 @@
   }
 }
 
-/* make profile page responsive on small screens */
 @media (max-width: 800px) {
-  .profile-row {
-    padding: 10px 16px;
+  .profile-page {
+    padding: 10px;
+  }
+
+  .profile-column {
+    min-height: calc(100vh - 20px);
+  }
+
+  .profile-top-section {
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding: 20px 16px;
+  }
+
+  .profile-avatar-left {
+    align-self: center;
+  }
+
+  .profile-details-right {
+    width: 100%;
+  }
+
+  .profile-recent-section,
+  .profile-highest-scores-section {
+    padding: 20px 16px;
+  }
+
+  .section-header {
+    font-size: 22px;
   }
 }
 
 @media (max-height: 600px) {
-  .username {
-    font-size: 1.5em;
+  .profile-page {
+    padding: 10px;
+  }
+
+  .profile-column {
+    min-height: auto;
+  }
+
+  .profile-header {
+    padding: 16px 20px 8px 20px;
+  }
+
+  .profile-title {
+    font-size: 24px;
+  }
+
+  .section-header {
+    font-size: 20px;
   }
 }

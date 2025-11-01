@@ -1,4 +1,4 @@
-import type { LyricsRecord, SongSearchResult } from '../types/music'
+import type { SongInfo, SongSearchResult } from '../types/music'
 
 type RawSearchItem = {
   id: number
@@ -40,11 +40,18 @@ export async function searchSongs(params: {
   }))
 }
 
-export async function getLyricsById(id: number): Promise<LyricsRecord> {
+export async function getSongInfoById(id: number): Promise<SongInfo> {
   const url = new URL(`/api/lrc/get/${id}`, window.location.origin)
   const res = await fetch(url.toString(), { headers: buildHeaders() })
   if (!res.ok) throw new Error(`Get by id failed (${res.status})`)
-  return (await res.json()) as LyricsRecord
+  return (await res.json()) as SongInfo
+}
+
+export async function getLyricsById(id: number): Promise<SongInfo> {
+  const url = new URL(`/api/lrc/get/${id}`, window.location.origin)
+  const res = await fetch(url.toString(), { headers: buildHeaders() })
+  if (!res.ok) throw new Error(`Get by id failed (${res.status})`)
+  return (await res.json()) as SongInfo
 }
 
 export async function getLyricsBySignature(params: {
@@ -52,14 +59,14 @@ export async function getLyricsBySignature(params: {
   artist_name: string
   album_name: string
   duration: number
-}): Promise<LyricsRecord> {
+}): Promise<SongInfo> {
   const url = new URL('/api/lrc/get', window.location.origin)
   for (const [key, value] of Object.entries(params)) {
     url.searchParams.set(key, String(value))
   }
   const res = await fetch(url.toString(), { headers: buildHeaders() })
   if (!res.ok) throw new Error(`Get failed (${res.status})`)
-  return (await res.json()) as LyricsRecord
+  return (await res.json()) as SongInfo
 }
 
 export async function getLyricsBySignatureCached(params: {
@@ -67,14 +74,14 @@ export async function getLyricsBySignatureCached(params: {
   artist_name: string
   album_name: string
   duration: number
-}): Promise<LyricsRecord> {
+}): Promise<SongInfo> {
   const url = new URL('/api/lrc/get-cached', window.location.origin)
   for (const [key, value] of Object.entries(params)) {
     url.searchParams.set(key, String(value))
   }
   const res = await fetch(url.toString(), { headers: buildHeaders() })
   if (!res.ok) throw new Error(`Get-cached failed (${res.status})`)
-  return (await res.json()) as LyricsRecord
+  return (await res.json()) as SongInfo
 }
 
 function buildHeaders(): HeadersInit {
