@@ -15,6 +15,5 @@ export async function fetchVideoInfo({trackName, artistName}: SongSearchResult):
     const res = await fetch(url.toString());
     if (!res.ok) throw new Error(`YouTube search failed: ${res.status}`);
     const data = (await res.json()) as VideoSearchResult;
-    console.log(data);
     return data;
 }

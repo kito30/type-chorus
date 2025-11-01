@@ -11,6 +11,7 @@ export default function SearchBar() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SongSearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingVideo, setIsLoadingVideo] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const controllerRef = useRef<AbortController | null>(null);
   const debouncedQuery = useDebounce(query, 300);
@@ -44,11 +45,23 @@ export default function SearchBar() {
       <SearchInput value={query} onChange={setQuery} />
       <SearchResults
         isLoading={isLoading}
+        isLoadingVideo={isLoadingVideo}
         error={error}
         results={results}
         debouncedQuery={debouncedQuery}
-        onSelect={r => navigate(`/game/${r.id}`)}
-        //onSelect={r => fetchVideoInfo(r) }
+        onSelect={async (r) => {
+          setIsLoadingVideo(true);
+          try {
+            const videoInfo = await fetchVideoInfo(r);
+            if (videoInfo) {
+              setIsLoadingVideo(false);
+              navigate('/gamepage', { state: { videoId: videoInfo.videoId } });
+            }
+          } catch (error) {
+            console.error('Failed to fetch video:', error);
+            setIsLoadingVideo(false);
+          }
+        }}
       />
     </div>
   );
@@ -62,3 +75,6 @@ function useDebounce<T>(value: T, delayMs: number): T {
   }, [value, delayMs]);
   return debounced;
 }
+
+
+
