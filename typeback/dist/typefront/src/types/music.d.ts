@@ -1,0 +1,29 @@
+export type SongSearchResult = {
+    id: number;
+    trackName: string;
+    artistName: string;
+    albumName?: string;
+    duration?: number;
+    hasSyncedLyrics: boolean;
+    hasPlainLyrics: boolean;
+};
+export type LyricLine = {
+    timeMs: number;
+    text: string;
+};
+export type LyricsRecord = {
+    id: number;
+    trackName: string;
+    artistName: string;
+    albumName?: string;
+    duration?: number;
+    instrumental: boolean;
+    plainLyrics?: string | null;
+    syncedLyrics?: string | null;
+};
+export type DifficultyPreset = {
+    id: 'easy' | 'normal' | 'hard';
+    spawnRateMultiplier: number;
+    onScreenDurationMs: number;
+    speedMultiplier: number;
+};
