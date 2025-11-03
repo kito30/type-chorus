@@ -29,7 +29,7 @@ export async function searchSongs(params: {
     throw new Error(`Search failed (${res.status})`)
   }
   const data = (await res.json()) as RawSearchItem[]
-  return data.map((item) => ({
+  const results: SongSearchResult[] = data.map((item) => ({
     id: item.id,
     trackName: item.trackName,
     artistName: item.artistName,
@@ -38,6 +38,8 @@ export async function searchSongs(params: {
     hasSyncedLyrics: Boolean(item.syncedLyrics && item.syncedLyrics.length > 0),
     hasPlainLyrics: Boolean(item.plainLyrics && item.plainLyrics.length > 0),
   }))
+  // Return only items that have synced lyrics
+  return results.filter(r => r.hasSyncedLyrics)
 }
 
 export async function getSongInfoById(id: number): Promise<SongInfo> {

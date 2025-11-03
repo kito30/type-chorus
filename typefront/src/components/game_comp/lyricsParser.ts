@@ -2,7 +2,6 @@ import type { SongInfo } from '../../types/music'
 
 export function parseLyrics(rec: SongInfo): string[] {
   const lrc = rec.syncedLyrics
-  if (lrc && lrc.includes(']')) {
     const rows = lrc.split(/\r?\n/)
     const pairs: Array<{ t: number; text: string }> = []
     for (const row of rows) {
@@ -17,8 +16,5 @@ export function parseLyrics(rec: SongInfo): string[] {
     }
     pairs.sort((a, b) => a.t - b.t)
     return pairs.map((p) => p.text).filter((t) => t.trim().length > 0)
-  }
-  const plain = rec.plainLyrics ?? ''
-  return plain.split(/\r?\n/).map((s) => s.trim()).filter((s) => s.length > 0)
 }
 

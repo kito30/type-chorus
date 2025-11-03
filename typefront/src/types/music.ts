@@ -11,8 +11,7 @@ export type SongInfo = {
   albumName?: string;
   duration?: number;
   instrumental: boolean;
-  plainLyrics?: string | null;
-  syncedLyrics?: string | null;
+  syncedLyrics: string;
   videoId?: string;
 };
 
@@ -23,7 +22,6 @@ export type SongSearchResult = {
   albumName?: string;
   duration?: number;
   hasSyncedLyrics: boolean;
-  hasPlainLyrics: boolean;
 };
 
 export type DifficultyPreset = {
