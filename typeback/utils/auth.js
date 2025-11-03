@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { User } from '../models/User.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev_only_change_me';
+const JWT_SECRET = process.env.JWT_SECRET || 'MyS3cur3Rand0mK3y!2025TypeChorus#ProjectSecret';
 const TOKEN_TTL = process.env.JWT_TTL || '7d';
 
 export function signToken(payload) {
