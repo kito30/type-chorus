@@ -37,8 +37,12 @@ const UsernameModal: React.FC<UsernameModalProps> = ({
     try {
       await onSave(newUsername);
       onClose();
-    } catch (err: any) {
-      setError(err.message || "Failed to update username");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unknown error occurred");
+      }
     } finally {
       setLoading(false);
     }
