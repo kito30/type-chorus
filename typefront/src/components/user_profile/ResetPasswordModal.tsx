@@ -4,11 +4,10 @@ import "../../styles/Profile.css";
 
 interface ResetPasswordModalProps {
   isOpen: boolean;
-  email: string;
   onClose: () => void;
 }
 
-const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, email, onClose }) => {
+const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, onClose }) => {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -42,7 +41,8 @@ const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, email, 
     setLoading(true);
 
     try {
-      const res = await fetch("http://127.0.0.1:3000/api/auth/change-password", {
+      const API_BASE = import.meta.env?.VITE_API_BASE || 'http://127.0.0.1:3000';
+      const res = await fetch(`${API_BASE}/api/auth/change-password`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -64,8 +64,12 @@ const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, email, 
       setConfirmPassword("");
       alert("Password changed successfully!");
       onClose();
-    } catch (err: any) {
-      setError(err.message || "Failed to change password");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unknown error occurred");
+      }
     } finally {
       setLoading(false);
     }

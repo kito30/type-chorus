@@ -20,20 +20,24 @@ export default function LoginCard({ onClose }: LoginCardProps) {
         setError(null);
         setLoading(true);
 
-        if (!email || !password) {
+        if (!username || !password) {
             setError("Please fill in all fields");
             setLoading(false);
             return;
         }
 
         try {
-            await login(email, password);
+            await login(username, password);
             onClose?.();
             // Reset form
-            setEmail("");
+            setUsername("");
             setPassword("");
-        } catch (err: any) {
-            setError(err.message || "Login failed. Please check your credentials.");
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                setError(err.message);
+            } else {
+                setError("An unknown error occurred");
+            }
         } finally {
             setLoading(false);
         }
@@ -63,8 +67,12 @@ export default function LoginCard({ onClose }: LoginCardProps) {
             setEmail("");
             setUsername("");
             setPassword("");
-        } catch (err: any) {
-            setError(err.message || "Registration failed. Please try again.");
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                setError(err.message);
+            } else {
+                setError("An unknown error occurred");
+            }
         } finally {
             setLoading(false);
         }
@@ -86,12 +94,12 @@ export default function LoginCard({ onClose }: LoginCardProps) {
                         <form onSubmit={handleLogin}>
                             <div className="flex flex-col gap-3">
                                 <input 
-                                    type="email" 
-                                    placeholder="Email" 
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
+                                    type="username" 
+                                    placeholder="Username" 
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
                                     className="bg-gray-700 text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-purple-500" 
-                                    autoComplete="email" 
+                                    autoComplete="username" 
                                     disabled={loading}
                                     required
                                 />

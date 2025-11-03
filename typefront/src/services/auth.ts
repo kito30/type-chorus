@@ -1,4 +1,4 @@
-const API_BASE = 'http://127.0.0.1:3000';
+const API_BASE = import.meta.env?.VITE_API_BASE || 'http://127.0.0.1:3000';
 
 export interface User {
   id: string;
@@ -28,11 +28,11 @@ export async function register(email: string, username: string, password: string
   return res.json();
 }
 
-export async function login(email: string, password: string): Promise<AuthResponse> {
+export async function login(username: string, password: string): Promise<AuthResponse> {
   const res = await fetch(`${API_BASE}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ username, password }),
   });
   
   if (!res.ok) {

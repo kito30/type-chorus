@@ -16,12 +16,11 @@ export async function authMiddleware(req, res, next) {
     const token = parts[1];
     try {
       const decoded = jwt.verify(token, JWT_SECRET);
-      // fetch fresh user data from MongoDB
-      const row = await User.findById(decoded.sub).lean();
-      if (!row) return res.status(401).json({ error: 'user not found' });
-      const { password_hash, _id, ...rest } = row;
+      const user = await User.findById(decoded.sub).lean()
+      const { _id, password_hash, ...rest } = user;
       req.user = { id: _id.toString(), ...rest };
-      return next();
+      // fetch fresh user data from MongoDB
+     return next();
     } catch (e) {
       return res.status(401).json({ error: 'invalid token' });
     }

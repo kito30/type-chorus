@@ -1,6 +1,6 @@
 import 'dotenv/config'
 import express from 'express'
-import youtubeRoutes from './youtubeRoutes.js'
+import youtubeRoutes from './routes/youtubeRoutes.js'
 import cors from 'cors'
 import { authRouter } from './routes/authRoutes.js'
 import { authMiddleware } from './utils/auth.js'
@@ -44,12 +44,7 @@ process.on('uncaughtException', (err) => {
 const start = async () => {
   try {
     await connectDb();
-    const server = app.listen(port, host, () => {
-      console.log(`API server listening on http://${host}:${port}`)
-    })
-    // Extra sanity: log address actually bound
-    const addr = server.address()
-    console.log('Bound address:', addr)
+    app.listen(port, host, () => console.log(`API server listening on http://${host}:${port}`))
   } catch (err) {
     console.error('Failed to start server:', err)
     process.exit(1)

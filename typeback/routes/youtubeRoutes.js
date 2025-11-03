@@ -1,5 +1,5 @@
 import express from 'express';
-import { searchYouTubeVideo } from './youtubeSearch.js';
+import { searchYouTubeVideo } from '../youtubeSearch.js';
 
 const router = express.Router();
 
