@@ -4,6 +4,7 @@ import ProfilePictureWithModal from "../components/user_profile/ProfilePictureWi
 import UsernameModal from "../components/user_profile/UsernameModal";
 import EmailModal from "../components/user_profile/EmailModal";
 import ResetPasswordModal from "../components/user_profile/ResetPasswordModal";
+import { useAuth } from "../contexts/AuthContextType";
 import "../styles/Profile.css";
 
 type RecentSong = {
@@ -16,6 +17,7 @@ type RecentSong = {
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
+  const { user, loading: authLoading, isAuthenticated, logout } = useAuth();
   const [username, setUsername] = useState<string>("Your Username");
   const [email, setEmail] = useState<string>("user@example.com");
   const [isUsernameModalOpen, setIsUsernameModalOpen] = useState<boolean>(false);
@@ -25,10 +27,13 @@ const Profile: React.FC = () => {
   const [highestScoredSongs, setHighestScoredSongs] = useState<RecentSong[]>([]);
 
   useEffect(() => {
-    const storedUsername = localStorage.getItem("profile.username");
-    if (storedUsername) setUsername(storedUsername);
-    const storedEmail = localStorage.getItem("profile.email");
-    if (storedEmail) setEmail(storedEmail);
+    if (user) {
+      setUsername(user.username || "Your Username");
+      setEmail(user.email || "user@example.com");
+    }
+  }, [user]);
+
+  useEffect(() => {
     const storedRecentSong = localStorage.getItem("profile.recentSong");
     if (storedRecentSong) {
       try {
@@ -61,6 +66,31 @@ const Profile: React.FC = () => {
 
   const openResetModal = () => setIsResetModalOpen(true);
   const closeResetModal = () => setIsResetModalOpen(false);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      navigate('/');
+    }
+  }, [authLoading, isAuthenticated, navigate]);
+
+  if (authLoading) {
+    return (
+      <div className="profile-page">
+        <div className="profile-column">
+          <div className="text-center">Loading...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <div className="profile-page">
@@ -146,6 +176,29 @@ const Profile: React.FC = () => {
               <div className="recent-subtitle">Play games to see your highest scores here</div>
             </div>
           )}
+        </section>
+
+        <section className="profile-logout-section" style={{ marginTop: '2rem', padding: '1rem 0', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+          <button 
+            onClick={handleLogout}
+            className="logout-btn"
+            style={{
+              width: '100%',
+              padding: '12px 24px',
+              backgroundColor: '#dc2626',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '16px',
+              fontWeight: '500',
+              transition: 'background-color 0.2s'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#b91c1c'}
+            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#dc2626'}
+          >
+            Logout
+          </button>
         </section>
       </div>
 
