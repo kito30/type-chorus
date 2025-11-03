@@ -54,3 +54,21 @@ export async function getMe(token: string): Promise<{ user: User }> {
   
   return res.json();
 }
+
+export async function updateUsername(token: string, username: string): Promise<{ message: string; user: User }> {
+  const res = await fetch(`${API_BASE}/api/auth/update-username`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ username }),
+  });
+  
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Failed to update username' }));
+    throw new Error(err.error || `Failed to update username: ${res.status}`);
+  }
+  
+  return res.json();
+}

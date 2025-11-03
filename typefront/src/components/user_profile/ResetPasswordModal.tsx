@@ -19,6 +19,11 @@ const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, email, 
   const handleChangePassword = async () => {
     setError(null);
 
+    if (!token) {
+      setError("You must be logged in to change your password");
+      return;
+    }
+
     if (!currentPassword || !newPassword || !confirmPassword) {
       setError("All fields are required");
       return;
@@ -56,7 +61,9 @@ const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, email, 
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: "Failed to change password" }));
-        throw new Error(err.error || "Failed to change password");
+        setError(err.error || `Failed to change password (${res.status})`);
+        setLoading(false);
+        return;
       }
 
       setCurrentPassword("");

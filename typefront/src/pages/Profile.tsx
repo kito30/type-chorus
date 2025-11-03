@@ -5,6 +5,7 @@ import UsernameModal from "../components/user_profile/UsernameModal";
 import EmailModal from "../components/user_profile/EmailModal";
 import ResetPasswordModal from "../components/user_profile/ResetPasswordModal";
 import { useAuth } from "../contexts/AuthContextType";
+import { updateUsername } from "../services/auth";
 import "../styles/Profile.css";
 
 type RecentSong = {
@@ -17,7 +18,7 @@ type RecentSong = {
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
-  const { user, loading: authLoading, isAuthenticated, logout } = useAuth();
+  const { user, loading: authLoading, isAuthenticated, logout, token, updateUser } = useAuth();
   const [username, setUsername] = useState<string>("Your Username");
   const [email, setEmail] = useState<string>("user@example.com");
   const [isUsernameModalOpen, setIsUsernameModalOpen] = useState<boolean>(false);
@@ -52,9 +53,15 @@ const Profile: React.FC = () => {
 
   const openUsernameModal = () => setIsUsernameModalOpen(true);
   const closeUsernameModal = () => setIsUsernameModalOpen(false);
-  const handleUsernameSave = (newUsername: string) => {
-    setUsername(newUsername);
-    localStorage.setItem("profile.username", newUsername);
+  const handleUsernameSave = async (newUsername: string) => {
+    if (!token) {
+      throw new Error("You must be logged in to change your username");
+    }
+
+    const data = await updateUsername(token, newUsername);
+    setUsername(data.user.username);
+    updateUser(data.user);
+    localStorage.setItem("profile.username", data.user.username);
   };
 
   const openEmailModal = () => setIsEmailModalOpen(true);

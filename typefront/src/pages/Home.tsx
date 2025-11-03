@@ -13,9 +13,15 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const stored = localStorage.getItem("profile.imageUrl");
-    if (stored) {
-      setProfileImageUrl(stored);
+    if (isAuthenticated) {
+      const stored = localStorage.getItem("profile.imageUrl");
+      if (stored) {
+        setProfileImageUrl(stored);
+      } else {
+        setProfileImageUrl("https://cdn-icons-png.flaticon.com/512/847/847969.png");
+      }
+    } else {
+      setProfileImageUrl("https://cdn-icons-png.flaticon.com/512/847/847969.png");
     }
   }, [isAuthenticated]);
 
