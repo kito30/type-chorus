@@ -1,19 +1,10 @@
-export type SongSearchResult = {
-  id: number;
-  trackName: string;
-  artistName: string;
-  albumName?: string;
-  duration?: number;
-  hasSyncedLyrics: boolean;
-  hasPlainLyrics: boolean;
-};
 
 export type LyricLine = {
   timeMs: number;
   text: string;
 };
 
-export type LyricsRecord = {
+export type SongInfo = {
   id: number;
   trackName: string;
   artistName: string;
@@ -22,6 +13,17 @@ export type LyricsRecord = {
   instrumental: boolean;
   plainLyrics?: string | null;
   syncedLyrics?: string | null;
+  videoId?: string;
+};
+
+export type SongSearchResult = {
+  id: number;
+  trackName: string;
+  artistName: string;
+  albumName?: string;
+  duration?: number;
+  hasSyncedLyrics: boolean;
+  hasPlainLyrics: boolean;
 };
 
 export type DifficultyPreset = {

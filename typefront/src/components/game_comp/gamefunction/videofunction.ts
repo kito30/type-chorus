@@ -37,9 +37,3 @@ export function createYouTubeController(iframe: HTMLIFrameElement): YouTubeContr
   };
 }
 
-// Convenience: create controller by element id
-export function createYouTubeControllerById(iframeElementId: string): YouTubeController | null {
-  const el = document.getElementById(iframeElementId) as HTMLIFrameElement | null;
-  if (!el) return null;
-  return createYouTubeController(el);
-}
