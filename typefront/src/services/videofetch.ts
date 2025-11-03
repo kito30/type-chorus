@@ -1,4 +1,4 @@
-import type { SongSearchResult } from "../types/music";
+import type { SongInfo } from "../types/music";
 
 type VideoSearchResult = {
   videoId: string;
@@ -8,13 +8,12 @@ type VideoSearchResult = {
   queryUsed: string;
 }
 
-export async function fetchVideoInfo({trackName, artistName}: SongSearchResult): Promise<VideoSearchResult | null> {
+export async function fetchVideoInfo({trackName, artistName}: SongInfo): Promise<VideoSearchResult | null> {
     const url = new URL('/api/youtube/search', window.location.origin);
     url.searchParams.set('title', trackName);
     url.searchParams.set('artist', artistName);
     const res = await fetch(url.toString());
     if (!res.ok) throw new Error(`YouTube search failed: ${res.status}`);
     const data = (await res.json()) as VideoSearchResult;
-    console.log(data);
     return data;
 }

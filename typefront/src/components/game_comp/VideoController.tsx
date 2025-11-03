@@ -1,9 +1,24 @@
-import { useMemo, useState } from 'react';
-import { createYouTubeController } from './videofunction';
+import { useEffect, useMemo, useState } from 'react';
+import { createYouTubeController } from './gamefunction/videofunction';
 
-export default function VideoController({ iframe }: { iframe: HTMLIFrameElement }) {
+export default function VideoController({ iframe, isLoaded }: { iframe: HTMLIFrameElement; isLoaded?: boolean }) {
+    // Load saved volume from localStorage, default to 50
+    const [volume, setVolume] = useState(() => {
+        const saved = localStorage.getItem('video.volume');
+        return saved ? Number(saved) : 50;
+    });
 
-    const [volume, setVolume] = useState(50);
+    const controller = useMemo(() => createYouTubeController(iframe), [iframe]);
+
+    // Set initial volume when iframe is loaded and ready
+    useEffect(() => {
+        if (controller && volume !== undefined && isLoaded) {
+            const timer = setTimeout(() => {
+                controller.setVolume(volume);
+            }, 200);
+            return () => clearTimeout(timer);
+        }
+    }, [controller, volume, isLoaded]); // Run when iframe is loaded
 
     const play = () => controller.play();
     const pause = () => controller.pause();
@@ -12,8 +27,8 @@ export default function VideoController({ iframe }: { iframe: HTMLIFrameElement 
     const onVolumeChange = (v: number) => {
         setVolume(v);
         controller.setVolume(v);
+        localStorage.setItem('video.volume', String(v));
     };
-    const controller = useMemo(() => createYouTubeController(iframe), [iframe]);
 
     return (
         <div className="mt-2 flex items-center gap-2">
@@ -23,7 +38,7 @@ export default function VideoController({ iframe }: { iframe: HTMLIFrameElement 
             <button className="px-3 py-1 rounded bg-green-600 text-white" onClick={unmute}>Unmute</button>
             <div className="flex items-center gap-2 ml-3">
                 <span className="text-sm text-white/80">Vol</span>
-                <input
+                <input className="w-20 sm:w-32 md:w-40"
                     type="range"
                     min={0}
                     max={100}

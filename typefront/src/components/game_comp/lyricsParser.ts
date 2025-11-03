@@ -1,6 +1,6 @@
-import type { LyricsRecord } from '../../types/music'
+import type { SongInfo } from '../../types/music'
 
-export function parseLyrics(rec: LyricsRecord): string[] {
+export function parseLyrics(rec: SongInfo): string[] {
   const lrc = rec.syncedLyrics
   if (lrc && lrc.includes(']')) {
     const rows = lrc.split(/\r?\n/)

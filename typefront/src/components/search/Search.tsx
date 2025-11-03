@@ -4,7 +4,6 @@ import { searchSongs } from '../../services/lrc';
 import type { SongSearchResult } from '../../types/music';
 import SearchInput from './SearchInput';
 import SearchResults from './SearchResults';
-import { fetchVideoInfo } from '../../services/videofetch';
 
 export default function SearchBar() {
   const navigate = useNavigate()
@@ -47,8 +46,9 @@ export default function SearchBar() {
         error={error}
         results={results}
         debouncedQuery={debouncedQuery}
-        onSelect={r => navigate(`/game/${r.id}`)}
-        // onSelect={r => fetchVideoInfo(r) }
+        onSelect={async (r) => {
+              navigate(`/song/${r.id}`);
+        }}
       />
     </div>
   );
@@ -62,3 +62,6 @@ function useDebounce<T>(value: T, delayMs: number): T {
   }, [value, delayMs]);
   return debounced;
 }
+
+
+
