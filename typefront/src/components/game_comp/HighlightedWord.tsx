@@ -9,18 +9,24 @@ export default function HighlightedWord({
   typed: string
   isActive?: boolean
 }) {
-  const len = Math.min(typed.length, word.length)
+  const limit = word.length
   return (
     <span className={isActive ? 'underline decoration-blue-400 decoration-2 underline-offset-4' : undefined}>
-      {Array.from({ length: len }).map((_, i) => {
-        const ch = typed[i]
-        const exp = word[i]
-        const ok = ch === exp
+      {Array.from({ length: limit }).map((_, i) => {
+        const expected = word[i]
+        const got = typed[i]
+        // Only color positions the user has "attempted" (i < typed.length)
+        if (i < typed.length) {
+          const ok = got === expected
+          return (
+            <span key={i} className={ok ? 'text-green-400' : 'text-red-400'}>{expected}</span>
+          )
+        }
+        // Unattempted positions render as normal expected characters
         return (
-          <span key={i} className={ok ? 'text-green-400' : 'text-red-400'}>{ch}</span>
+          <span key={i} className="text-(--color-text)">{expected}</span>
         )
       })}
-      <span className="text-(--color-text)">{word.slice(len)}</span>
     </span>
   )
 }

@@ -19,8 +19,13 @@ export function useWordProgress(activeLine: string) {
   }, [])
 
   const handleSpace = useCallback((chunk: string) => {
-    // Record typed chunk for current word and advance
-    setTypedWords(prev => ({ ...prev, [wordIndex]: chunk }))
+    // If user pressed Space with no input, mark the whole word as incorrect visually
+    const currentWord = words[wordIndex] || ''
+    const recorded = chunk === '' && currentWord
+      ? '!'.repeat(currentWord.length) // force per-char red highlighting
+      : chunk
+    // Record typed (or fail mask) for current word and advance
+    setTypedWords(prev => ({ ...prev, [wordIndex]: recorded }))
     const finished = wordIndex + 1 >= words.length
     if (finished) {
       setWordIndex(0)
@@ -30,7 +35,7 @@ export function useWordProgress(activeLine: string) {
     setWordIndex(w => w + 1)
     setInput('')
     return { lineCompleted: false }
-  }, [wordIndex, words.length])
+  }, [wordIndex, words])
 
   return {
     input,

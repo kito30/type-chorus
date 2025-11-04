@@ -52,20 +52,37 @@ export default function LyricsDisplay({
                 (() => {
                   const words = line.split(/\s+/)
                   const typed = currentInput ?? ''
+                  // Check if line is completed: wordIndex is 0 and we have all words in typedWords
+                  const lineCompleted = wordIndex === 0 && words.length > 0 && Object.keys(typedWords).length >= words.length
 
                   // Render words via reusable component for portability
                   return (
                     <>
-                      {words.map((w, wi) => (
-                        <React.Fragment key={wi}>
-                          <HighlightedWord
-                            word={w}
-                            typed={wi < wordIndex ? (typedWords[wi] ?? '') : wi === wordIndex ? typed : ''}
-                            isActive={wi === wordIndex}
-                          />
-                          {wi < words.length - 1 ? <span className="text-(--color-text)">{' '}</span> : null}
-                        </React.Fragment>
-                      ))}
+                      {words.map((w, wi) => {
+                        let wordTyped = ''
+                        if (lineCompleted) {
+                          // Line is completed, show all words from typedWords
+                          wordTyped = typedWords[wi] ?? ''
+                        } else if (wi < wordIndex) {
+                          // Previous words: use stored typed values
+                          wordTyped = typedWords[wi] ?? ''
+                        } else if (wi === wordIndex) {
+                          // Current word: use live input
+                          wordTyped = typed
+                        }
+                        // Otherwise wordTyped stays empty (not yet typed)
+
+                        return (
+                          <React.Fragment key={wi}>
+                            <HighlightedWord
+                              word={w}
+                              typed={wordTyped}
+                              isActive={wi === wordIndex && !lineCompleted}
+                            />
+                            {wi < words.length - 1 ? <span className="text-(--color-text)">{' '}</span> : null}
+                          </React.Fragment>
+                        )
+                      })}
                     </>
                   )
                 })()
