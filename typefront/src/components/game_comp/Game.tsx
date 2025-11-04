@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { createYouTubeController, type YouTubeController } from './gamefunction/videofunction'
 import { useWordProgress } from './gamefunction/useWordProgress'
+import { useScoring } from './gamefunction/useScoring'
+import ScoreHud from './ScoreHud'
 import GameTitle from './GameTitle'
 import LyricsDisplay from './LyricsDisplay'
 import GameInput from './GameInput'
@@ -15,12 +17,9 @@ export default function Game({ songId }: { songId: number }) {
   const { record, videoId, lines, timedLines, isLoading, error } = useGameData(songId)
   const [phase, setPhase] = useState<Phase>('idle')
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [mountKey] = useState(() => Date.now())
   // Per-line typing managed by hook
-  const [score, setScore] = useState(0)
-  const [combo, setCombo] = useState(0)
-  const [correctChars, setCorrectChars] = useState(0)
-  const [wrongChars, setWrongChars] = useState(0)
-  const [startedAtMs, setStartedAtMs] = useState<number | null>(null)
+  const { score, combo, correctChars, wrongChars, startedAtMs, resetAll, onInputChange, onSpace, onWordSubmit } = useScoring()
   const wrongIndicesRef = useRef<Set<number>>(new Set())
   const visibleCount = 5
   const inputRef = useRef<HTMLInputElement | null>(null)
@@ -34,6 +33,13 @@ export default function Game({ songId }: { songId: number }) {
     }
   }, [phase])
 
+  // On full page refresh or mount, ensure state starts from idle and player is paused
+  useEffect(() => {
+    setPhase('idle')
+    setCurrentIndex(0)
+    try { controllerRef.current?.pause() } catch { /* ignore */ }
+  }, [])
+
 
   useEffect(() => {
     if (iframeRef.current) {
@@ -44,7 +50,7 @@ export default function Game({ songId }: { songId: number }) {
 
   const activeLine = lines[currentIndex] ?? ''
   // typing progression handled by useWordProgress
-  const { input, wordIndex, typedWords, handleChange, handleSpace } = useWordProgress(activeLine)
+  const { input, wordIndex, typedWords, words, handleChange, handleSpace } = useWordProgress(activeLine)
   // expectedWord no longer needed in Game; per-word validation is handled on space using the typed chunk
 
   function handleStart() {
@@ -52,11 +58,7 @@ export default function Game({ songId }: { songId: number }) {
     setPhase('playing')
     
     // typing hook resets on line change
-    setScore(0)
-    setCombo(0)
-    setCorrectChars(0)
-    setWrongChars(0)
-    setStartedAtMs(Date.now())
+    resetAll()
     
     wrongIndicesRef.current = new Set()
     // typing hook resets on line change
@@ -65,28 +67,34 @@ export default function Game({ songId }: { songId: number }) {
       if (!controllerRef.current && iframeRef.current) {
         controllerRef.current = createYouTubeController(iframeRef.current);
       }
-      console.log('controllerRef.current', controllerRef.current);
       controllerRef.current?.seekTo(0, true);
+      // Autoplay policies are friendlier to muted playback
+      controllerRef.current?.mute();
       controllerRef.current?.play();
-      // Retry shortly in case the iframe wasn't fully ready yet
-      setTimeout(() => controllerRef.current?.play(), 200);
+      // Retry a few times in case the iframe isn't fully ready yet
+      let attempts = 0
+      const maxAttempts = 10
+      const retry = () => {
+        attempts += 1
+        if (attempts >= maxAttempts) return
+        controllerRef.current?.play()
+        setTimeout(retry, 300)
+      }
+      setTimeout(retry, 300)
+      // If the user explicitly started, we can unmute shortly after playback begins
+      setTimeout(() => controllerRef.current?.unmute(), 400)
     } catch (error) {
       console.error('Error starting game:', error)
     }
   }
 
   function handleRestart() {
+    // Reset everything: seek to 0, pause, reset scores, go back to idle
     setPhase('idle')
     setCurrentIndex(0)
-    setScore(0)
-    setCombo(0)
-    setCorrectChars(0)
-    setWrongChars(0)
-    setStartedAtMs(null)
-    
+    resetAll(false) // Don't start timer - wait for Start button
     wrongIndicesRef.current = new Set()
     try {
-      // Ensure controller exists, then seek to start and play
       if (!controllerRef.current && iframeRef.current) {
         controllerRef.current = createYouTubeController(iframeRef.current)
       }
@@ -99,11 +107,15 @@ export default function Game({ songId }: { songId: number }) {
 
   function handleInputChange(next: string) {
     if (phase !== 'playing') return
+    onInputChange(words[wordIndex] || '', next)
     handleChange(next)
   }
 
   function handleAdvanceOnWord(chunk: string) {
+    // Score by whole word: only exact matches get points
+    onWordSubmit(words[wordIndex] || '', chunk)
     const { lineCompleted } = handleSpace(chunk)
+    onSpace()
     if (lineCompleted) {
       setCurrentIndex((i) => i + 1)
       if (currentIndex + 1 >= lines.length) {
@@ -133,7 +145,7 @@ export default function Game({ songId }: { songId: number }) {
           <GameHeader artistName={record.artistName} />
           <div className="w-full mx-auto px-6 pt-0 pb-6">
             <div className="flex flex-col items-center gap-12">
-              <VideoCard videoId={videoId} iframeRef={iframeRef} />
+              <VideoCard videoId={videoId} iframeRef={iframeRef} reloadKey={mountKey} />
               <div className="flex flex-col items-center gap-6">
                 <GameTitle
                   trackName={record.trackName}
@@ -141,36 +153,7 @@ export default function Game({ songId }: { songId: number }) {
                   onStart={handleStart}
                   onRestart={handleRestart}
                 />
-                <div className="fixed right-6 top-16 z-20 flex flex-col items-end gap-3">
-                  <div className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-(--color-card-bg, #101114) border border-gray-700 shadow-lg">
-                    <span className="uppercase tracking-wide text-xs opacity-70">Score</span>
-                    <span className="text-2xl font-extrabold">{score}</span>
-                  </div>
-                  <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-(--color-card-bg, #101114) border border-gray-700 shadow">
-                    <span className="uppercase tracking-wide text-xs opacity-70">Combo</span>
-                    <span className="text-lg font-bold">{combo}</span>
-                  </div>
-                  <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-(--color-card-bg, #101114) border border-gray-700 shadow">
-                    <span className="uppercase tracking-wide text-xs opacity-70">Accuracy</span>
-                    <span className="text-lg font-bold">
-                      {(() => {
-                        const total = correctChars + wrongChars
-                        return total === 0 ? '100%' : `${Math.round((correctChars / total) * 100)}%`
-                      })()}
-                    </span>
-                  </div>
-                  <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-(--color-card-bg, #101114) border border-gray-700 shadow">
-                    <span className="uppercase tracking-wide text-xs opacity-70">WPM</span>
-                    <span className="text-lg font-bold">
-                      {(() => {
-                        const start = startedAtMs
-                        if (!start) return 0
-                        const minutes = Math.max(0.001, (Date.now() - start) / 60000)
-                        return Math.round((correctChars / 5) / minutes)
-                      })()}
-                    </span>
-                  </div>
-                </div>
+                <ScoreHud score={score} combo={combo} correctChars={correctChars} wrongChars={wrongChars} startedAtMs={startedAtMs} />
                 <LyricsDisplay
                   timedLines={timedLines}
                   videoId={videoId}
