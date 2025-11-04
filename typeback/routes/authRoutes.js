@@ -10,7 +10,7 @@ authRouter.post('/register', async (req, res) => {
   if (!email || !username || !password) {
     return res.status(400).json({ error: 'email, username and password are required' });
   }
-  if(/[A-Z]/.test(email) || !email.contains('@')) {
+  if(/[A-Z]/.test(email) || !email.includes('@')) {
     return res.status(400).json({ error: 'invalid email form' });
   }
   const existing = await User.findOne({ email }).lean();

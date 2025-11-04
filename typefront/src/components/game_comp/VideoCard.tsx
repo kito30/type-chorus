@@ -2,8 +2,8 @@ import { useState, useRef, useEffect} from 'react';
 import VideoController from './VideoController';
 
 export default function VideoCard({ videoId }: { videoId: string }) {
-    const iframeRef = useRef<HTMLIFrameElement | null>(null);
-    const [iframeEl, setIframeEl] = useState<HTMLIFrameElement | null>(null);
+    const iframeRef = useRef<HTMLIFrameElement | null>(null); // current ref for the iframe
+    const [iframeEl, setIframeEl] = useState<HTMLIFrameElement | null>(null); // ref for controller
     const [iframeLoaded, setIframeLoaded] = useState(false);
     const baseUrl = `https://www.youtube.com/embed/${videoId}`;
     const params = new URLSearchParams({
