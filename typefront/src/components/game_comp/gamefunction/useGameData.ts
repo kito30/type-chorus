@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { getLyricsById } from '../../../services/lrc'
-import { parseLyrics } from '../lyricsParser'
+import { parseLyrics, parseLyricsWithTimestamps } from '../lyricsParser'
+import type { LyricLine } from '../../../types/music'
 import { loadVideoId } from './loadVideoId'
 import type { SongInfo } from '../../../types/music'
 
@@ -8,6 +9,7 @@ export function useGameData(songId: number | undefined) {
   const [record, setRecord] = useState<SongInfo | null>(null)
   const [videoId, setVideoId] = useState<string>("")
   const [lines, setLines] = useState<string[]>([])
+  const [timedLines, setTimedLines] = useState<LyricLine[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -21,8 +23,10 @@ export function useGameData(songId: number | undefined) {
       try {
         const rec = await getLyricsById(Number(songId))
         const parsed = parseLyrics(rec)
+        const parsedTimed = parseLyricsWithTimestamps(rec)
         setRecord(rec)
         setLines(parsed)
+        setTimedLines(parsedTimed)
         await loadVideoId(rec, setVideoId, setRecord)
       } catch {
         setError('Failed to load lyrics')
@@ -34,6 +38,6 @@ export function useGameData(songId: number | undefined) {
     loadData()
   }, [songId])
 
-  return { record, videoId, lines, isLoading, error }
+  return { record, videoId, lines, timedLines, isLoading, error }
 }
 

@@ -2,14 +2,27 @@ import { useState, useEffect, useRef } from 'react';
 
 declare global {
     interface Window {
-        YT: any; 
+        YT: {
+            Player: new (element: HTMLElement | string, config: { videoId?: string }) => {
+                getCurrentTime: () => number;
+                getDuration: () => number;
+                getPlayerState: () => number;
+            };
+        };
         onYouTubeIframeAPIReady: () => void;
     }
 }
 
-export function useYoutubeTime( iframeRef: React.RefObject<HTMLIFrameElement>, videoId: string) {
+interface YouTubePlayer {
+    getCurrentTime: () => number;
+    getDuration: () => number;
+    getPlayerState: () => number;
+}
+
+export function useYoutubeTime( iframeRef: React.RefObject<HTMLIFrameElement | null>, videoId: string) {
     const [timeSeconds, setTimeSeconds] = useState<number>(0);
-    const playerRef = useRef<any>(null); ///ref to youtube player object
+    const [ready, setReady] = useState<boolean>(false);
+    const playerRef = useRef<YouTubePlayer | null>(null); ///ref to youtube player object
     
     useEffect(() => {
         if(window.YT?.Player) return;
@@ -18,46 +31,47 @@ export function useYoutubeTime( iframeRef: React.RefObject<HTMLIFrameElement>, v
         document.body.appendChild(tag);
     }, []);
     useEffect(() => {
-        if(!iframeRef.current || !window.YT?.Player) return;
-        
         const init  = () => {
-            if(iframeRef.current && !playerRef.current) {
-                playerRef.current = new window.YT.Player(iframeRef.current, {
-                    videoId,
-                });
+            const el = iframeRef.current
+            if(el && !playerRef.current) {
+                // Minimal config to satisfy our local types
+                // We attach onReady via a setTimeout to avoid typing issues
+                playerRef.current = new window.YT.Player(el, { videoId });
+                // Poll until player exposes getCurrentTime (ready enough)
+                const waitId = setInterval(() => {
+                    if (playerRef.current && typeof playerRef.current.getCurrentTime === 'function') {
+                        clearInterval(waitId);
+                        setReady(true);
+                    }
+                }, 100);
             }
         }
-        if(window.YT.Player) {
+
+        if (window.YT?.Player) {
             init()
-        }
-        else {
+        } else {
+            // Ensure the callback is set so when the script loads, we initialize
             window.onYouTubeIframeAPIReady = init;
         }
     }, [iframeRef, videoId]);
     
     //get the time
     useEffect(() => {
-    if(!playerRef.current) return;
-    
-    const id = setInterval(() => {
+        if(!ready || !playerRef.current) return;
+        const id = setInterval(() => {
             try {
-                const timeSeconds = playerRef.current.getCurrentTime();
-                const duration = playerRef.current.getDuration();
-                
-                if (typeof timeSeconds === 'number' && typeof duration === 'number') {
-                    setTimeSeconds(timeSeconds);
-                    
-                    // Stop if video ended
-                    if (timeSeconds >= duration) {
-                        clearInterval(id);
-                    }
+                const p = playerRef.current;
+                if (!p) return;
+                const t = p.getCurrentTime();
+                const d = p.getDuration();
+                if (typeof t === 'number' && typeof d === 'number') {
+                    setTimeSeconds(t);
                 }
-            } catch (error) {
-                console.error('Error getting current time:', error);
-                clearInterval(id);
+            } catch {
+                // swallow
             }
         }, 100);
         return () => clearInterval(id);
-        }, [])
+    }, [ready, videoId])
     return timeSeconds;
 }

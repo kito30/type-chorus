@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import GameTitle from './GameTitle'
 import LyricsDisplay from './LyricsDisplay'
 import GameInput from './GameInput'
@@ -10,12 +10,14 @@ import { useGameData } from './gamefunction/useGameData'
 type Phase = 'idle' | 'countdown' | 'playing' | 'finished'
 
 export default function Game({ songId }: { songId: number }) {
-  const { record, videoId, lines, isLoading, error } = useGameData(songId)
+  const { record, videoId, lines, timedLines, isLoading, error } = useGameData(songId)
   const [phase, setPhase] = useState<Phase>('idle')
   const [currentIndex, setCurrentIndex] = useState(0)
   const [input, setInput] = useState('')
-  const visibleCount = 3
+  const visibleCount = 5
   const inputRef = useRef<HTMLInputElement | null>(null)
+  const iframeRef = useRef<HTMLIFrameElement | null>(null) // Game owns the iframe ref
+
 
   useEffect(() => {
     if (phase === 'playing') {
@@ -23,11 +25,8 @@ export default function Game({ songId }: { songId: number }) {
     }
   }, [phase])
 
-  const visibleLines = useMemo(() => {
-    return lines.slice(currentIndex, currentIndex + visibleCount)
-  }, [lines, currentIndex])
 
-  const activeLine = visibleLines[0] ?? ''
+  const activeLine = lines[currentIndex] ?? ''
 
   function handleStart() {
     if (lines.length === 0) return
@@ -72,7 +71,7 @@ export default function Game({ songId }: { songId: number }) {
           <GameHeader artistName={record.artistName} />
           <div className="w-full mx-auto px-6 pt-0 pb-6">
             <div className="flex flex-col items-center gap-12">
-              <VideoCard videoId={videoId} />
+              <VideoCard videoId={videoId} iframeRef={iframeRef} />
               <div className="flex flex-col items-center gap-6">
                 <GameTitle
                   trackName={record.trackName}
@@ -80,7 +79,13 @@ export default function Game({ songId }: { songId: number }) {
                   onStart={handleStart}
                   onRestart={handleRestart}
                 />
-                <LyricsDisplay lines={lines} visibleLines={visibleLines} />
+                <LyricsDisplay
+                  timedLines={timedLines}
+                  videoId={videoId}
+                  iframeRef={iframeRef}
+                  allLines={lines}
+                  visibleCount={visibleCount}
+                />
                 {phase === 'playing' && (
                   <GameInput ref={inputRef} value={input} onChange={handleInputChange} />
                 )}
