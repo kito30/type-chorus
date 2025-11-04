@@ -5,7 +5,16 @@ interface GameControlsProps {
 }
 
 export default function GameControls({ phase, onStart, onRestart }: GameControlsProps) {
-  if (phase === 'playing') return null
+  if (phase === 'playing') {
+    return (
+      <button
+        className="px-3 py-2 rounded bg-gray-800"
+        onClick={onRestart}
+      >
+        Restart
+      </button>
+    )
+  }
 
   if (phase === 'finished') {
     return (

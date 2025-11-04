@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { createYouTubeController, type YouTubeController } from './gamefunction/videofunction'
 import GameTitle from './GameTitle'
 import LyricsDisplay from './LyricsDisplay'
 import GameInput from './GameInput'
@@ -24,6 +25,7 @@ export default function Game({ songId }: { songId: number }) {
   const visibleCount = 5
   const inputRef = useRef<HTMLInputElement | null>(null)
   const iframeRef = useRef<HTMLIFrameElement | null>(null)
+  const controllerRef = useRef<YouTubeController | null>(null)
 
 
   useEffect(() => {
@@ -31,6 +33,13 @@ export default function Game({ songId }: { songId: number }) {
       inputRef.current?.focus()
     }
   }, [phase])
+
+
+  useEffect(() => {
+    if (iframeRef.current) {
+      controllerRef.current = createYouTubeController(iframeRef.current)
+    }
+  }, [iframeRef.current])
 
 
   const activeLine = lines[currentIndex] ?? ''
@@ -46,6 +55,11 @@ export default function Game({ songId }: { songId: number }) {
     setStartedAtMs(Date.now())
     setLineStartedAtMs(Date.now())
     wrongIndicesRef.current = new Set()
+    try {
+      controllerRef.current?.seekTo(0, true)
+      setTimeout(() => controllerRef.current?.play(), 100)
+    } catch {
+    }
   }
 
   function handleRestart() {
@@ -59,6 +73,11 @@ export default function Game({ songId }: { songId: number }) {
     setStartedAtMs(null)
     setLineStartedAtMs(null)
     wrongIndicesRef.current = new Set()
+    try {
+      controllerRef.current?.seekTo(0, true)
+      controllerRef.current?.pause()
+    } catch {
+    }
   }
 
   function handleInputChange(next: string) {
@@ -143,19 +162,27 @@ export default function Game({ songId }: { songId: number }) {
                   onStart={handleStart}
                   onRestart={handleRestart}
                 />
-                <div className="w-full flex items-center justify-center gap-6 text-sm opacity-90">
-                  <div>Score: <span className="font-semibold">{score}</span></div>
-                  <div>Combo: <span className="font-semibold">{combo}</span></div>
-                  <div>
-                    Accuracy: <span className="font-semibold">
+                <div className="fixed right-6 top-16 z-20 flex flex-col items-end gap-3">
+                  <div className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-(--color-card-bg, #101114) border border-gray-700 shadow-lg">
+                    <span className="uppercase tracking-wide text-xs opacity-70">Score</span>
+                    <span className="text-2xl font-extrabold">{score}</span>
+                  </div>
+                  <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-(--color-card-bg, #101114) border border-gray-700 shadow">
+                    <span className="uppercase tracking-wide text-xs opacity-70">Combo</span>
+                    <span className="text-lg font-bold">{combo}</span>
+                  </div>
+                  <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-(--color-card-bg, #101114) border border-gray-700 shadow">
+                    <span className="uppercase tracking-wide text-xs opacity-70">Accuracy</span>
+                    <span className="text-lg font-bold">
                       {(() => {
                         const total = correctChars + wrongChars
                         return total === 0 ? '100%' : `${Math.round((correctChars / total) * 100)}%`
                       })()}
                     </span>
                   </div>
-                  <div>
-                    WPM: <span className="font-semibold">
+                  <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-(--color-card-bg, #101114) border border-gray-700 shadow">
+                    <span className="uppercase tracking-wide text-xs opacity-70">WPM</span>
+                    <span className="text-lg font-bold">
                       {(() => {
                         const start = startedAtMs
                         if (!start) return 0
