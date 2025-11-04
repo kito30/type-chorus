@@ -25,25 +25,8 @@ export function useScoring() {
     prevInputRef.current = ''
   }, [])
 
-  const onInputChange = useCallback((expectedWord: string, nextValue: string) => {
-    const prev = prevInputRef.current
-    // Only consider newly typed character
-    if (nextValue.length > prev.length) {
-      const addedIndex = prev.length
-      const addedChar = nextValue.charAt(addedIndex)
-      const expectedChar = expectedWord.charAt(addedIndex)
-      if (addedChar && expectedChar) {
-        if (addedChar === expectedChar) {
-          setScore((s) => s + 10)
-          setCorrectChars((c) => c + 1)
-          // simple combo increase
-          setCombo((k) => k + 1)
-        } else {
-          setWrongChars((w) => w + 1)
-          setCombo(0)
-        }
-      }
-    }
+  const onInputChange = useCallback((_expectedWord: string, nextValue: string) => {
+    // No per-character scoring; only track latest input for word submission
     prevInputRef.current = nextValue
   }, [])
 
