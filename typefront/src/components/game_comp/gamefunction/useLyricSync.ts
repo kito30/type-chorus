@@ -47,11 +47,19 @@ export function useLyricSync({
       idx++
     }
 
-    const startMs = Math.max(0, (timedLines[idx]?.timeMs ?? 0) - leadMs)
+    const currentLineTime = timedLines[idx]?.timeMs ?? 0
+    const startMs = currentLineTime - leadMs // Allow typing 200ms before the line timestamp
     const endMs = (idx + 1 < timedLines.length)
-      ? Math.max(0, (timedLines[idx + 1].timeMs ?? 0) - leadMs)
+      ? (timedLines[idx + 1].timeMs ?? 0) - leadMs
       : Number.POSITIVE_INFINITY
-    const inWindow = t >= startMs && t < endMs
+    
+    // Allow typing when we're at or past the start time (200ms before timestamp)
+    // Also allow a buffer (500ms) before the start time to handle timing edge cases
+    // This applies to all lines including the first one
+    const timeUntilStart = startMs - t
+    const canTypeNow = t >= startMs || (timeUntilStart > 0 && timeUntilStart <= 500)
+    const inWindow = canTypeNow && t < endMs
+    
     setCanType(inWindow)
     // Always update index to reflect video time, even if it's the same (handles seeks)
     setCurrentIndex(idx)

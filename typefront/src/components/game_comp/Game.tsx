@@ -121,6 +121,12 @@ export default function Game({ songId }: { songId: number }) {
 
   function handleInputChange(next: string) {
     if (phase !== 'playing' || !canType) return
+    // Check if line is completed but hasn't advanced yet (video hasn't reached next line)
+    const lineCompleted = wordIndex === 0 && words.length > 0 && Object.keys(typedWords).length >= words.length
+    if (lineCompleted && syncedIndex < currentIndex + 1) {
+      // Line is done but video hasn't reached next line yet - ignore input
+      return
+    }
     onInputChange(words[wordIndex] || '', next)
     handleChange(next)
   }
@@ -133,25 +139,39 @@ export default function Game({ songId }: { songId: number }) {
       onSpace()
       return
     }
+    // Check if line is already completed but hasn't advanced yet
+    const lineAlreadyCompleted = wordIndex === 0 && words.length > 0 && Object.keys(typedWords).length >= words.length
+    if (lineAlreadyCompleted && syncedIndex < currentIndex + 1) {
+      // Line is done but video hasn't reached next line yet - ignore Space key
+      return
+    }
     // Score by whole word only when allowed to type
     onWordSubmit(words[wordIndex] || '', chunk)
     const { lineCompleted } = handleSpace(chunk)
     onSpace()
     if (lineCompleted) {
-      setCurrentIndex((i) => i + 1)
-      if (currentIndex + 1 >= lines.length) {
-        setPhase('finished')
-        if (record) {
-          const songInfo = {
-            id: record.id,
-            trackName: record.trackName,
-            artistName: record.artistName,
-            albumName: record.albumName,
-            playedAt: Date.now()
+      // Only advance to next line if video has reached that line's timestamp
+      // syncedIndex represents what line the video is currently on
+      const nextIndex = currentIndex + 1
+      if (syncedIndex >= nextIndex) {
+        // Video has reached the next line, allow advancement
+        setCurrentIndex(nextIndex)
+        if (nextIndex >= lines.length) {
+          setPhase('finished')
+          if (record) {
+            const songInfo = {
+              id: record.id,
+              trackName: record.trackName,
+              artistName: record.artistName,
+              albumName: record.albumName,
+              playedAt: Date.now()
+            }
+            localStorage.setItem('profile.recentSong', JSON.stringify(songInfo))
           }
-          localStorage.setItem('profile.recentSong', JSON.stringify(songInfo))
         }
       }
+      // If video hasn't reached next line yet, ignore the input (don't advance)
+      // The syncedIndex will eventually catch up via the useEffect, and lyrics will advance naturally
     }
   }
 
