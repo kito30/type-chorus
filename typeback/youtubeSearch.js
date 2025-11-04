@@ -25,9 +25,13 @@ export async function searchYouTubeVideo(title, artist) {
     const results = await client.search(query);
 
     // Prefer SONG results
-    const songs = (results || []).filter((r) => (r?.type || '').toLowerCase() === 'song');
-    const pick = songs[0] || results[0] || null;
+  
+    const songs = (results || []).filter((r) => (
+        r?.type || '').toLowerCase() === 'song' && 
+        r?.name?.toLowerCase() === trimmedTitle.toLowerCase() && 
+        r?.artist?.name.toLowerCase() === trimmedArtist.toLowerCase());
 
+    const pick = songs[0] || results[0] || null;
     if (!pick) {
       throw new Error(`No video found for: ${query}`);
     }

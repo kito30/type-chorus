@@ -11,9 +11,11 @@ function postCommand(iframe: HTMLIFrameElement, func: string, args: unknown[] = 
   const win = iframe.contentWindow;
   if (!win) return;
   try {
+    // YouTube IFrame API expects targetOrigin to match the frame's origin or '*'
+    // Using '*' improves reliability across embed URLs with query params
     win.postMessage(
       JSON.stringify({ event: 'command', func, args }),
-      iframe.src
+      '*'
     );
   } catch {
     // no-op

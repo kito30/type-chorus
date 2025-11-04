@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import HighlightedWord from './HighlightedWord'
 import { useYoutubeTime } from './gamefunction/useYoutubeTime'
 
 interface LyricsDisplayProps {
@@ -7,6 +8,10 @@ interface LyricsDisplayProps {
   iframeRef: React.RefObject<HTMLIFrameElement | null>
   allLines?: string[]
   visibleCount?: number
+  currentInput?: string
+  wordIndex?: number
+  currentLineIndex?: number
+  typedWords?: Record<number, string>
 }
 
 export default function LyricsDisplay({
@@ -15,12 +20,23 @@ export default function LyricsDisplay({
   iframeRef,
   allLines,
   visibleCount = 5,
+  currentInput,
+  wordIndex = 0,
+  currentLineIndex,
+  typedWords = {},
 }: LyricsDisplayProps) {
   const [startIndex, setStartIndex] = useState(0)
   const prevRef = useRef(0)
   const currentTimeSeconds = useYoutubeTime(iframeRef, videoId || '')
 
   useEffect(() => {
+    if (typeof currentLineIndex === 'number') {
+      if (currentLineIndex !== prevRef.current) {
+        prevRef.current = currentLineIndex
+        setStartIndex(currentLineIndex)
+      }
+      return
+    }
     if (!timedLines || timedLines.length === 0) return
     if (typeof currentTimeSeconds !== 'number') return
     const leadMs = 200
@@ -31,7 +47,7 @@ export default function LyricsDisplay({
       prevRef.current = next
       setStartIndex(next)
     }
-  }, [currentTimeSeconds, timedLines])
+  }, [currentTimeSeconds, timedLines, currentLineIndex])
 
   const source = (timedLines && allLines && allLines.length === timedLines.length)
     ? allLines
@@ -50,7 +66,30 @@ export default function LyricsDisplay({
               key={startIndex + i}
               className={`text-xl tracking-wide transition-opacity duration-500 ease-in-out ${opacityClass}`}
             >
-              {line || ' '}
+              {isActive ? (
+                (() => {
+                  const words = line.split(/\s+/)
+                  const typed = currentInput ?? ''
+
+                  // Render words via reusable component for portability
+                  return (
+                    <>
+                      {words.map((w, wi) => (
+                        <React.Fragment key={wi}>
+                          <HighlightedWord
+                            word={w}
+                            typed={wi < wordIndex ? (typedWords[wi] ?? '') : wi === wordIndex ? typed : ''}
+                            isActive={wi === wordIndex}
+                          />
+                          {wi < words.length - 1 ? <span className="text-(--color-text)">{' '}</span> : null}
+                        </React.Fragment>
+                      ))}
+                    </>
+                  )
+                })()
+              ) : (
+                <>{line || ' '}</>
+              )}
             </li>
           )
         })}

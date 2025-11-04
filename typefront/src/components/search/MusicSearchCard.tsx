@@ -12,9 +12,6 @@ export default function MusicSearchCard({ result, onSelect }: { result: SongSear
           {result.artistName}{result.albumName ? `  ${result.albumName}` : ''}
         </div>
       </div>
-      <div className="ml-3 text-xs text-gray-500 whitespace-nowrap">
-        {result.hasSyncedLyrics ? 'Synced' : result.hasPlainLyrics ? 'Lyrics' : 'No lyrics'}
-      </div>
     </div>
   );
 }

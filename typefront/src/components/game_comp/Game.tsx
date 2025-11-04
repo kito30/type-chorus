@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { createYouTubeController, type YouTubeController } from './gamefunction/videofunction'
+import { useWordProgress } from './gamefunction/useWordProgress'
 import GameTitle from './GameTitle'
 import LyricsDisplay from './LyricsDisplay'
 import GameInput from './GameInput'
@@ -14,13 +15,12 @@ export default function Game({ songId }: { songId: number }) {
   const { record, videoId, lines, timedLines, isLoading, error } = useGameData(songId)
   const [phase, setPhase] = useState<Phase>('idle')
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [input, setInput] = useState('')
+  // Per-line typing managed by hook
   const [score, setScore] = useState(0)
   const [combo, setCombo] = useState(0)
   const [correctChars, setCorrectChars] = useState(0)
   const [wrongChars, setWrongChars] = useState(0)
   const [startedAtMs, setStartedAtMs] = useState<number | null>(null)
-  const [lineStartedAtMs, setLineStartedAtMs] = useState<number | null>(null)
   const wrongIndicesRef = useRef<Set<number>>(new Set())
   const visibleCount = 5
   const inputRef = useRef<HTMLInputElement | null>(null)
@@ -39,96 +39,73 @@ export default function Game({ songId }: { songId: number }) {
     if (iframeRef.current) {
       controllerRef.current = createYouTubeController(iframeRef.current)
     }
-  }, [iframeRef.current])
+  }, [iframeRef])
 
 
   const activeLine = lines[currentIndex] ?? ''
+  // typing progression handled by useWordProgress
+  const { input, wordIndex, typedWords, handleChange, handleSpace } = useWordProgress(activeLine)
+  // expectedWord no longer needed in Game; per-word validation is handled on space using the typed chunk
 
   function handleStart() {
     if (lines.length === 0) return
     setPhase('playing')
-    setInput('')
+    
+    // typing hook resets on line change
     setScore(0)
     setCombo(0)
     setCorrectChars(0)
     setWrongChars(0)
     setStartedAtMs(Date.now())
-    setLineStartedAtMs(Date.now())
+    
     wrongIndicesRef.current = new Set()
+    // typing hook resets on line change
     try {
-      controllerRef.current?.seekTo(0, true)
-      setTimeout(() => controllerRef.current?.play(), 100)
-    } catch {
+      // Ensure controller exists, then seek and play immediately on user gesture
+      if (!controllerRef.current && iframeRef.current) {
+        controllerRef.current = createYouTubeController(iframeRef.current);
+      }
+      console.log('controllerRef.current', controllerRef.current);
+      controllerRef.current?.seekTo(0, true);
+      controllerRef.current?.play();
+      // Retry shortly in case the iframe wasn't fully ready yet
+      setTimeout(() => controllerRef.current?.play(), 200);
+    } catch (error) {
+      console.error('Error starting game:', error)
     }
   }
 
   function handleRestart() {
     setPhase('idle')
     setCurrentIndex(0)
-    setInput('')
     setScore(0)
     setCombo(0)
     setCorrectChars(0)
     setWrongChars(0)
     setStartedAtMs(null)
-    setLineStartedAtMs(null)
+    
     wrongIndicesRef.current = new Set()
     try {
+      // Ensure controller exists, then seek to start and play
+      if (!controllerRef.current && iframeRef.current) {
+        controllerRef.current = createYouTubeController(iframeRef.current)
+      }
       controllerRef.current?.seekTo(0, true)
       controllerRef.current?.pause()
-    } catch {
+    } catch (error) {
+      console.error('Error restarting game:', error)
     }
   }
 
   function handleInputChange(next: string) {
     if (phase !== 'playing') return
-    const prev = input
-    if (next.length > prev.length) {
-      const addedIndex = next.length - 1
-      const addedChar = next.charAt(addedIndex)
-      const expectedChar = activeLine.charAt(addedIndex)
-      if (addedChar === expectedChar) {
-        setCorrectChars((c) => c + 1)
-        const nextCombo = combo + 1
-        setCombo(nextCombo)
-        const multiplier = nextCombo >= 50 ? 2 : nextCombo >= 25 ? 1.5 : nextCombo >= 10 ? 1.2 : 1
-        setScore((s) => s + Math.round(1 * multiplier))
-      } else {
-        if (!wrongIndicesRef.current.has(addedIndex)) {
-          wrongIndicesRef.current.add(addedIndex)
-          setWrongChars((w) => w + 1)
-          setCombo(0)
-          setScore((s) => s - 1)
-        }
-      }
-    }
-    if (next.length < prev.length) {
-      const keep = new Set<number>()
-      wrongIndicesRef.current.forEach((idx) => {
-        if (idx < next.length) keep.add(idx)
-      })
-      wrongIndicesRef.current = keep
-    }
-    setInput(next)
-    if (next === activeLine) {
+    handleChange(next)
+  }
+
+  function handleAdvanceOnWord(chunk: string) {
+    const { lineCompleted } = handleSpace(chunk)
+    if (lineCompleted) {
       setCurrentIndex((i) => i + 1)
-      setInput('')
-      const now = Date.now()
-      const elapsed = lineStartedAtMs ? now - lineStartedAtMs : 0
-      let windowMs = 3000
-      if (timedLines && timedLines[currentIndex] && timedLines[currentIndex + 1]) {
-        const start = timedLines[currentIndex].timeMs
-        const end = timedLines[currentIndex + 1].timeMs
-        windowMs = Math.max(1000, end - start)
-      }
-      const ratio = Math.max(0, Math.min(1, 1 - (elapsed / windowMs)))
-      const baseBonus = 50
-      const bonusRaw = baseBonus * ratio
-      const currentCombo = combo
-      const multiplier = currentCombo >= 50 ? 2 : currentCombo >= 25 ? 1.5 : currentCombo >= 10 ? 1.2 : 1
-      setScore((s) => s + Math.round(bonusRaw * multiplier))
-      wrongIndicesRef.current = new Set()
-      setLineStartedAtMs(now)
       if (currentIndex + 1 >= lines.length) {
         setPhase('finished')
         if (record) {
@@ -144,6 +121,8 @@ export default function Game({ songId }: { songId: number }) {
       }
     }
   }
+
+  
 
   return (
     <>
@@ -198,9 +177,13 @@ export default function Game({ songId }: { songId: number }) {
                   iframeRef={iframeRef}
                   allLines={lines}
                   visibleCount={visibleCount}
+                  currentInput={input}
+                  wordIndex={wordIndex}
+                  typedWords={typedWords}
+                  currentLineIndex={currentIndex}
                 />
                 {phase === 'playing' && (
-                  <GameInput ref={inputRef} value={input} onChange={handleInputChange} />
+                  <GameInput ref={inputRef} value={input} onChange={handleInputChange} onSpace={(chunk) => { handleAdvanceOnWord(chunk) }} />
                 )}
               </div>
               {phase === 'finished' && (
