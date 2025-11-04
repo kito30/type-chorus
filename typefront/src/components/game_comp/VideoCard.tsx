@@ -40,6 +40,7 @@ export default function VideoCard({
                 <iframe
                     key={reloadKey}
                     ref={iframeRef}
+                    id="game-yt-iframe"
                     className="w-full h-full"
                     src={src}
                     title="YouTube video"

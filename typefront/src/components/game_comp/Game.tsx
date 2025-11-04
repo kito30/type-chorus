@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createYouTubeController, type YouTubeController } from './gamefunction/videofunction'
 import { useWordProgress } from './gamefunction/useWordProgress'
 import { useScoring } from './gamefunction/useScoring'
+import { useLyricSync } from './gamefunction/useLyricSync'
 import ScoreHud from './ScoreHud'
 import GameTitle from './GameTitle'
 import LyricsDisplay from './LyricsDisplay'
@@ -52,6 +53,19 @@ export default function Game({ songId }: { songId: number }) {
   // typing progression handled by useWordProgress
   const { input, wordIndex, typedWords, words, handleChange, handleSpace } = useWordProgress(activeLine)
   // expectedWord no longer needed in Game; per-word validation is handled on space using the typed chunk
+
+  // Sync lyrics to YouTube time via portable hook
+  const LEAD_MS = 200
+  const { currentIndex: syncedIndex, canType } = useLyricSync({
+    timedLines,
+    videoId,
+    iframeRef,
+    leadMs: LEAD_MS,
+    enabled: phase === 'playing',
+  })
+  useEffect(() => {
+    if (syncedIndex !== currentIndex) setCurrentIndex(syncedIndex)
+  }, [syncedIndex, currentIndex])
 
   function handleStart() {
     if (lines.length === 0) return
@@ -106,13 +120,20 @@ export default function Game({ songId }: { songId: number }) {
   }
 
   function handleInputChange(next: string) {
-    if (phase !== 'playing') return
+    if (phase !== 'playing' || !canType) return
     onInputChange(words[wordIndex] || '', next)
     handleChange(next)
   }
 
   function handleAdvanceOnWord(chunk: string) {
-    // Score by whole word: only exact matches get points
+    // If we're outside the typing window, let Space jump to the synced line
+    if (!canType) {
+      setCurrentIndex(syncedIndex)
+      handleSpace('')
+      onSpace()
+      return
+    }
+    // Score by whole word only when allowed to type
     onWordSubmit(words[wordIndex] || '', chunk)
     const { lineCompleted } = handleSpace(chunk)
     onSpace()
@@ -156,8 +177,6 @@ export default function Game({ songId }: { songId: number }) {
                 <ScoreHud score={score} combo={combo} correctChars={correctChars} wrongChars={wrongChars} startedAtMs={startedAtMs} />
                 <LyricsDisplay
                   timedLines={timedLines}
-                  videoId={videoId}
-                  iframeRef={iframeRef}
                   allLines={lines}
                   visibleCount={visibleCount}
                   currentInput={input}

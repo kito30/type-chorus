@@ -1,11 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import HighlightedWord from './HighlightedWord'
-import { useYoutubeTime } from './gamefunction/useYoutubeTime'
 
 interface LyricsDisplayProps {
   timedLines?: { timeMs: number; text: string }[]
-  videoId: string
-  iframeRef: React.RefObject<HTMLIFrameElement | null>
   allLines?: string[]
   visibleCount?: number
   currentInput?: string
@@ -16,8 +13,6 @@ interface LyricsDisplayProps {
 
 export default function LyricsDisplay({
   timedLines,
-  videoId,
-  iframeRef,
   allLines,
   visibleCount = 5,
   currentInput,
@@ -26,28 +21,15 @@ export default function LyricsDisplay({
   typedWords = {},
 }: LyricsDisplayProps) {
   const [startIndex, setStartIndex] = useState(0)
-  const prevRef = useRef(0)
-  const currentTimeSeconds = useYoutubeTime(iframeRef, videoId || '')
 
   useEffect(() => {
     if (typeof currentLineIndex === 'number') {
-      if (currentLineIndex !== prevRef.current) {
-        prevRef.current = currentLineIndex
-        setStartIndex(currentLineIndex)
-      }
+      // When driven by parent (Game), always follow the provided index
+      // Update immediately without checking if it changed to ensure sync
+      setStartIndex(currentLineIndex)
       return
     }
-    if (!timedLines || timedLines.length === 0) return
-    if (typeof currentTimeSeconds !== 'number') return
-    const leadMs = 200
-    const nowMs = Math.max(0, Math.floor(currentTimeSeconds * 1000) + leadMs)
-    let next = 0
-    while (next + 1 < timedLines.length && timedLines[next + 1].timeMs <= nowMs) next++
-    if (next !== prevRef.current) {
-      prevRef.current = next
-      setStartIndex(next)
-    }
-  }, [currentTimeSeconds, timedLines, currentLineIndex])
+  }, [timedLines, currentLineIndex])
 
   const source = (timedLines && allLines && allLines.length === timedLines.length)
     ? allLines
