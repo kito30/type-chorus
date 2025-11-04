@@ -1,8 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
-import { createYouTubeController, type YouTubeController } from './gamefunction/videofunction'
 import { useWordProgress } from './gamefunction/useWordProgress'
 import { useScoring } from './gamefunction/useScoring'
 import { useLyricSync } from './gamefunction/useLyricSync'
+import { useVideoControl } from './gamefunction/useVideoControl'
+import { useGamePhase } from './gamefunction/useGamePhase'
+import { useLineAdvancement } from './gamefunction/useLineAdvancement'
+import { useInputValidation } from './gamefunction/useInputValidation'
+import { useGameCompletion } from './gamefunction/useGameCompletion'
 import ScoreHud from './ScoreHud'
 import GameTitle from './GameTitle'
 import LyricsDisplay from './LyricsDisplay'
@@ -12,49 +16,26 @@ import GameHeader from './GameHeader'
 import VideoCard from './VideoCard'
 import { useGameData } from './gamefunction/useGameData'
 
-type Phase = 'idle' | 'countdown' | 'playing' | 'finished'
-
 export default function Game({ songId }: { songId: number }) {
   const { record, videoId, lines, timedLines, isLoading, error } = useGameData(songId)
-  const [phase, setPhase] = useState<Phase>('idle')
-  const [currentIndex, setCurrentIndex] = useState(0)
   const [mountKey] = useState(() => Date.now())
-  // Per-line typing managed by hook
-  const { score, combo, correctChars, wrongChars, startedAtMs, resetAll, onInputChange, onSpace, onWordSubmit } = useScoring()
-  const wrongIndicesRef = useRef<Set<number>>(new Set())
   const visibleCount = 5
   const inputRef = useRef<HTMLInputElement | null>(null)
   const iframeRef = useRef<HTMLIFrameElement | null>(null)
-  const controllerRef = useRef<YouTubeController | null>(null)
 
+  // Game phase management
+  const { phase, start: startPhase, finish: finishPhase, reset: resetPhase } = useGamePhase()
 
-  useEffect(() => {
-    if (phase === 'playing') {
-      inputRef.current?.focus()
-    }
-  }, [phase])
+  // Video control
+  const { startVideo, restartVideo, pauseVideo } = useVideoControl(iframeRef)
 
-  // On full page refresh or mount, ensure state starts from idle and player is paused
-  useEffect(() => {
-    setPhase('idle')
-    setCurrentIndex(0)
-    try { controllerRef.current?.pause() } catch { /* ignore */ }
-  }, [])
+  // Scoring
+  const { score, combo, correctChars, wrongChars, startedAtMs, resetAll, onInputChange, onSpace, onWordSubmit } = useScoring()
 
+  // Game completion handling
+  const { saveRecentSong } = useGameCompletion()
 
-  useEffect(() => {
-    if (iframeRef.current) {
-      controllerRef.current = createYouTubeController(iframeRef.current)
-    }
-  }, [iframeRef])
-
-
-  const activeLine = lines[currentIndex] ?? ''
-  // typing progression handled by useWordProgress
-  const { input, wordIndex, typedWords, words, handleChange, handleSpace } = useWordProgress(activeLine)
-  // expectedWord no longer needed in Game; per-word validation is handled on space using the typed chunk
-
-  // Sync lyrics to YouTube time via portable hook
+  // Sync lyrics to YouTube time
   const LEAD_MS = 200
   const { currentIndex: syncedIndex, canType } = useLyricSync({
     timedLines,
@@ -63,11 +44,49 @@ export default function Game({ songId }: { songId: number }) {
     leadMs: LEAD_MS,
     enabled: phase === 'playing',
   })
-  useEffect(() => {
-    if (syncedIndex !== currentIndex) setCurrentIndex(syncedIndex)
-  }, [syncedIndex, currentIndex])
 
-  // Auto-focus when the timestamps hit (typing window opens)
+  // Line advancement logic
+  const { currentIndex, tryAdvanceToNext, reset: resetLineIndex } = useLineAdvancement({
+    syncedIndex,
+    totalLines: lines.length,
+    onAllLinesComplete: () => {
+      finishPhase()
+      if (record) {
+        saveRecentSong(record)
+      }
+    },
+  })
+
+  // Word progress for current line
+  const activeLine = lines[currentIndex] ?? ''
+  const { input, wordIndex, typedWords, words, handleChange, handleSpace } = useWordProgress(activeLine)
+
+  // Input validation
+  const { canProcessInput, canProcessSpace } = useInputValidation({
+    phase,
+    canType,
+    wordIndex,
+    words,
+    typedWords,
+    currentIndex,
+    syncedIndex,
+  })
+
+  // Initialize video controller on mount
+  useEffect(() => {
+    pauseVideo()
+    resetLineIndex()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Focus input when phase changes to playing
+  useEffect(() => {
+    if (phase === 'playing') {
+      inputRef.current?.focus()
+    }
+  }, [phase])
+
+  // Auto-focus when typing window opens
   useEffect(() => {
     if (phase === 'playing' && canType) {
       inputRef.current?.focus()
@@ -76,106 +95,36 @@ export default function Game({ songId }: { songId: number }) {
 
   function handleStart() {
     if (lines.length === 0) return
-    setPhase('playing')
-    
-    // typing hook resets on line change
+    startPhase()
     resetAll()
-    
-    wrongIndicesRef.current = new Set()
-    // typing hook resets on line change
-    try {
-      // Ensure controller exists, then seek and play immediately on user gesture
-      if (!controllerRef.current && iframeRef.current) {
-        controllerRef.current = createYouTubeController(iframeRef.current);
-      }
-      controllerRef.current?.seekTo(0, true);
-      // Autoplay policies are friendlier to muted playback
-      controllerRef.current?.mute();
-      controllerRef.current?.play();
-      // Retry a few times in case the iframe isn't fully ready yet
-      let attempts = 0
-      const maxAttempts = 10
-      const retry = () => {
-        attempts += 1
-        if (attempts >= maxAttempts) return
-        controllerRef.current?.play()
-        setTimeout(retry, 300)
-      }
-      setTimeout(retry, 300)
-      // If the user explicitly started, we can unmute shortly after playback begins
-      setTimeout(() => controllerRef.current?.unmute(), 400)
-    } catch (error) {
-      console.error('Error starting game:', error)
-    }
+    resetLineIndex()
+    startVideo()
   }
 
   function handleRestart() {
-    // Reset everything: seek to 0, pause, reset scores, go back to idle
-    setPhase('idle')
-    setCurrentIndex(0)
+    resetPhase()
+    resetLineIndex()
     resetAll(false) // Don't start timer - wait for Start button
-    wrongIndicesRef.current = new Set()
-    try {
-      if (!controllerRef.current && iframeRef.current) {
-        controllerRef.current = createYouTubeController(iframeRef.current)
-      }
-      controllerRef.current?.seekTo(0, true)
-      controllerRef.current?.pause()
-    } catch (error) {
-      console.error('Error restarting game:', error)
-    }
+    restartVideo()
   }
 
   function handleInputChange(next: string) {
-    if (phase !== 'playing' || !canType) return
-    // Check if line is completed but hasn't advanced yet (video hasn't reached next line)
-    const lineCompleted = wordIndex === 0 && words.length > 0 && Object.keys(typedWords).length >= words.length
-    if (lineCompleted && syncedIndex < currentIndex + 1) {
-      // Line is done but video hasn't reached next line yet - ignore input
-      return
-    }
+    if (!canProcessInput()) return
     onInputChange(words[wordIndex] || '', next)
     handleChange(next)
   }
 
   function handleAdvanceOnWord(chunk: string) {
-    // If we're outside the typing window, ignore Space entirely (no movement)
-    if (!canType) {
-      return
-    }
-    // Check if line is already completed but hasn't advanced yet
-    const lineAlreadyCompleted = wordIndex === 0 && words.length > 0 && Object.keys(typedWords).length >= words.length
-    if (lineAlreadyCompleted && syncedIndex < currentIndex + 1) {
-      // Line is done but video hasn't reached next line yet - ignore Space key
-      return
-    }
-    // Score by whole word only when allowed to type
+    if (!canProcessSpace()) return
+
+    // Score the word
     onWordSubmit(words[wordIndex] || '', chunk)
     const { lineCompleted } = handleSpace(chunk)
     onSpace()
+
+    // Try to advance to next line if completed
     if (lineCompleted) {
-      // Only advance to next line if video has reached that line's timestamp
-      // syncedIndex represents what line the video is currently on
-      const nextIndex = currentIndex + 1
-      if (syncedIndex >= nextIndex) {
-        // Video has reached the next line, allow advancement
-        setCurrentIndex(nextIndex)
-        if (nextIndex >= lines.length) {
-          setPhase('finished')
-          if (record) {
-            const songInfo = {
-              id: record.id,
-              trackName: record.trackName,
-              artistName: record.artistName,
-              albumName: record.albumName,
-              playedAt: Date.now()
-            }
-            localStorage.setItem('profile.recentSong', JSON.stringify(songInfo))
-          }
-        }
-      }
-      // If video hasn't reached next line yet, ignore the input (don't advance)
-      // The syncedIndex will eventually catch up via the useEffect, and lyrics will advance naturally
+      tryAdvanceToNext()
     }
   }
 
