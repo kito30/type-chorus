@@ -1,4 +1,14 @@
-import yts from 'yt-search'
+import YTMusic from 'ytmusic-api'
+
+let ytmusic; // lazy singleton
+
+async function getClient() {
+  if (!ytmusic) {
+    ytmusic = new YTMusic();
+    await ytmusic.initialize(); // Optionally pass cookies for better results
+  }
+  return ytmusic;
+}
 
 export async function searchYouTubeVideo(title, artist) {
   const trimmedTitle = String(title || '').trim();
@@ -11,44 +21,34 @@ export async function searchYouTubeVideo(title, artist) {
   const query = [trimmedArtist, trimmedTitle].filter(Boolean).join(' ');
 
   try {
-    const result = await yts(query);
-    let vids = result.videos.slice(0, 10) || [];
-    const norm = (s) => s.toLowerCase();
-    const wantArtist = norm(trimmedArtist);
-    const wantTitle = norm(trimmedTitle);
+    const client = await getClient();
+    const results = await client.search(query);
 
-    vids = vids.sort((a, b) => {
-      // First priority: Check if video author matches artist
-      const aArtistMatch = wantArtist && norm(a.author.name).includes(wantArtist) ? 1 : 0;
-      const bArtistMatch = wantArtist && norm(b.author.name).includes(wantArtist) ? 1 : 0;
+    // Prefer SONG results
+    const songs = (results || []).filter((r) => (r?.type || '').toLowerCase() === 'song');
+    const pick = songs[0] || results[0] || null;
 
-      // Second priority: Views
-      const viewsDiff = b.views - a.views;
-
-      // Third priority: Title score
-      const aScore =
-        (wantArtist && norm(a.title).includes(wantArtist) ? 1 : 0) +
-        (wantTitle && norm(a.title).includes(wantTitle) ? 1 : 0);
-      const bScore =
-        (wantArtist && norm(b.title).includes(wantArtist) ? 1 : 0) +
-        (wantTitle && norm(b.title).includes(wantTitle) ? 1 : 0);
-
-      // Sort by: artist match first, then views, then title score
-      return (bArtistMatch - aArtistMatch) || viewsDiff || (bScore - aScore);
-    });
-
-    const vid = vids[0] || null;
-
-    if (!vid) {
-      throw new Error('No video found');
+    if (!pick) {
+      throw new Error(`No video found for: ${query}`);
     }
 
+    const videoId = pick.videoId || pick.youtubeId || pick.id;
+    if (!videoId) {
+      throw new Error(`No playable videoId for: ${query}`);
+    }
+
+    const durationSeconds = pick.durationSeconds || pick.duration || 0;
+    const channel = Array.isArray(pick.artists) && pick.artists.length > 0
+      ? pick.artists.map(a => a.name).join(', ')
+      : (pick.artist?.name || pick.author || '');
+
     return {
-      videoId: vid.videoId,
-      title: vid.title,
-      channel: vid.author.name,
-      duration: vid.duration.seconds,
+      videoId,
+      title: pick.name || pick.title || '',
+      channel,
+      duration: durationSeconds,
       queryUsed: query,
+      source: 'ytmusic-api',
     };
   } catch (e) {
     console.error('YouTube search error:', e);
