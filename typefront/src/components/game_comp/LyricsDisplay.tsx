@@ -41,14 +41,19 @@ export default function LyricsDisplay({
   return (
     <div className="rounded-xl bg-(--color-card-bg, #101114) text-(--color-text) border border-gray-800 p-6 h-auto w-100">
       <ul className="space-y-2">
-        {slice.map((line, i) => (
-          <li
-            key={startIndex + i}
-            className={`text-xl tracking-wide transition-opacity duration-500 ${i === 0 ? 'opacity-100' : 'opacity-60'}`}
-          >
-            {line || ' '}
-          </li>
-        ))}
+        {slice.map((line, i) => {
+          const isActive = i === 0
+          const isExiting = i === (visibleCount - 1)
+          const opacityClass = isActive ? 'opacity-100' : isExiting ? 'opacity-0' : 'opacity-60'
+          return (
+            <li
+              key={startIndex + i}
+              className={`text-xl tracking-wide transition-opacity duration-500 ease-in-out ${opacityClass}`}
+            >
+              {line || ' '}
+            </li>
+          )
+        })}
       </ul>
     </div>
   )
