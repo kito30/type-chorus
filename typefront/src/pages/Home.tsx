@@ -41,6 +41,7 @@ const Home: React.FC = () => {
     };
   }, [isLoginOpen]);
 
+
   const handleProfileClick = () => {
     if (isAuthenticated) {
       navigate('/profile');
@@ -70,8 +71,14 @@ const Home: React.FC = () => {
                 }}
               />
             </button>
-            {!isAuthenticated && isLoginOpen && (
-              <div className="absolute right-0 mt-2 z-50">
+            {!isAuthenticated && (
+              <div 
+                className={`absolute right-0 mt-2 z-50 transition-all duration-300 ease-out overflow-hidden ${
+                  isLoginOpen 
+                    ? 'opacity-100 translate-y-0 max-h-[800px]' 
+                    : 'opacity-0 -translate-y-4 max-h-0 pointer-events-none'
+                }`}
+              >
                 <LoginCard onClose={() => setIsLoginOpen(false)} />
               </div>
             )}
@@ -80,8 +87,8 @@ const Home: React.FC = () => {
       </header>
    
       <main className="flex-1 flex flex-col items-center justify-center">
-          <img src={logoUrl} alt="Logo" className="w-2xl" />
-          <Search />
+        <img src={logoUrl} alt="Logo" className="w-2xl" />
+        <Search />
       </main>
     </div>
   );

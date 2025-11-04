@@ -50,6 +50,7 @@ authRouter.put('/change-password', authMiddleware, async (req, res) => {
   if (!row) return res.status(401).json({ error: 'invalid credentials' });
 
   const ok = await verifyPassword(password, row.password_hash);
+  console.log('Password match:', ok);
   if (!ok) return res.status(401).json({ error: 'invalid credentials' });
   password_hash = await hashPassword(password);
   await User.updateOne({ username: username }, { password_hash: password_hash });
