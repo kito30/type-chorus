@@ -67,6 +67,13 @@ export default function Game({ songId }: { songId: number }) {
     if (syncedIndex !== currentIndex) setCurrentIndex(syncedIndex)
   }, [syncedIndex, currentIndex])
 
+  // Auto-focus when the timestamps hit (typing window opens)
+  useEffect(() => {
+    if (phase === 'playing' && canType) {
+      inputRef.current?.focus()
+    }
+  }, [canType, currentIndex, phase])
+
   function handleStart() {
     if (lines.length === 0) return
     setPhase('playing')
@@ -132,11 +139,8 @@ export default function Game({ songId }: { songId: number }) {
   }
 
   function handleAdvanceOnWord(chunk: string) {
-    // If we're outside the typing window, let Space jump to the synced line
+    // If we're outside the typing window, ignore Space entirely (no movement)
     if (!canType) {
-      setCurrentIndex(syncedIndex)
-      handleSpace('')
-      onSpace()
       return
     }
     // Check if line is already completed but hasn't advanced yet
@@ -205,7 +209,13 @@ export default function Game({ songId }: { songId: number }) {
                   currentLineIndex={currentIndex}
                 />
                 {phase === 'playing' && (
-                  <GameInput ref={inputRef} value={input} onChange={handleInputChange} onSpace={(chunk) => { handleAdvanceOnWord(chunk) }} />
+                  <GameInput
+                    ref={inputRef}
+                    value={input}
+                    onChange={handleInputChange}
+                    onSpace={(chunk) => { handleAdvanceOnWord(chunk) }}
+                    disabled={!canType}
+                  />
                 )}
               </div>
               {phase === 'finished' && (

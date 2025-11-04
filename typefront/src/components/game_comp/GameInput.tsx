@@ -4,10 +4,11 @@ interface GameInputProps {
   value: string
   onChange: (value: string) => void
   onSpace?: (chunk: string) => void
+  disabled?: boolean
 }
 
 const GameInput = forwardRef<HTMLInputElement, GameInputProps>(
-  ({ value, onChange, onSpace }, ref) => {
+  ({ value, onChange, onSpace, disabled }, ref) => {
     return (
       <input
         ref={ref}
@@ -25,7 +26,7 @@ const GameInput = forwardRef<HTMLInputElement, GameInputProps>(
           }
         }}
         autoFocus
-        
+        disabled={disabled}
       />
     )
   }
