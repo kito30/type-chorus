@@ -198,6 +198,18 @@ export default function Game({ songId }: { songId: number }) {
                   iframeRef={iframeRef}
                   allLines={lines}
                   visibleCount={visibleCount}
+                  onActiveIndexChange={(idx) => {
+                    if (phase !== 'playing') return
+                    if (idx > currentIndex) {
+                      setCurrentIndex(idx)
+                      setInput('')
+                      wrongIndicesRef.current = new Set()
+                      setLineStartedAtMs(Date.now())
+                      if (idx >= lines.length) {
+                        setPhase('finished')
+                      }
+                    }
+                  }}
                 />
                 {phase === 'playing' && (
                   <GameInput ref={inputRef} value={input} onChange={handleInputChange} />

@@ -7,6 +7,7 @@ interface LyricsDisplayProps {
   iframeRef: React.RefObject<HTMLIFrameElement | null>
   allLines?: string[]
   visibleCount?: number
+  onActiveIndexChange?: (index: number) => void
 }
 
 export default function LyricsDisplay({
@@ -15,6 +16,7 @@ export default function LyricsDisplay({
   iframeRef,
   allLines,
   visibleCount = 5,
+  onActiveIndexChange,
 }: LyricsDisplayProps) {
   const [startIndex, setStartIndex] = useState(0)
   const prevRef = useRef(0)
@@ -30,6 +32,7 @@ export default function LyricsDisplay({
     if (next !== prevRef.current) {
       prevRef.current = next
       setStartIndex(next)
+      try { onActiveIndexChange?.(next) } catch {}
     }
   }, [currentTimeSeconds, timedLines])
 
