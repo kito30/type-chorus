@@ -220,7 +220,7 @@ npm run dev
 | Anh Duy Pham | Fullstack Development and monitoring | Develop Game UI, Game Logic Implementation, Lyrics Parsing, Youtube Search system | `Game.tsx, lyricsParser.ts, VideoCard.tsx, VideoController.tsx, youtubeRoutes.js, youtubeSearch.js,...` |
 | Muhammad Waleed Hassan | Frontend (Search & UI) | Implemented search flow and results UI, improved loading/error UX, and polished responsive styling. | `typefront/src/components/search/*`, `typefront/src/services/lrc.ts`, `typefront/src/components/search/LoadingOverlay.tsx`, `typefront/src/components/ui-kit/highlightbutton.tsx` |
 | Sujal Gurung | Backend (Auth & Mongo) | Implemented JWT authentication flow, MongoDB/Mongoose setup, environment configuration, and secured route middleware. | `typeback/models/User.js`, `typeback/utils/auth.js`, `typeback/db.js`, `typeback/routes/authRoutes.js` |
-| Andy | Auth & Profile UI, QA/Tooling | Built login/profile UI and auth context; added tests and onboarding docs; improved DX. | `typefront/src/contexts/AuthContext.tsx`, `src/components/login_profile/logincard.tsx`, `src/components/user_profile/*`, `src/__tests__/*`, `README.md` |
+| Andy Luu | Auth & Profile UI, QA/Tooling | Built login/profile UI and auth context; added tests and onboarding docs; improved DX. | `typefront/src/contexts/AuthContext.tsx`, `src/components/login_profile/logincard.tsx`, `src/components/user_profile/*`, `src/__tests__/*`, `README.md` |
 
 ### Communication & collaboration
 - Standups: 10–15 min daily to surface blockers and assign priorities.
