@@ -1,4 +1,5 @@
-const API_BASE = import.meta.env?.VITE_API_BASE || 'http://127.0.0.1:3000';
+// Prefer BACKEND_BASE; fall back to legacy VITE_API_BASE, then same-origin
+const API_BASE = import.meta.env.API_BASE;
 
 export interface User {
   id: string;

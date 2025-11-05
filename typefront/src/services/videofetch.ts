@@ -1,4 +1,5 @@
 import type { SongInfo } from "../types/music";
+const API_BASE = import.meta.env.API_BASE
 
 type VideoSearchResult = {
   videoId: string;
@@ -9,7 +10,7 @@ type VideoSearchResult = {
 }
 
 export async function fetchVideoInfo({trackName, artistName}: SongInfo): Promise<VideoSearchResult | null> {
-    const url = new URL('/api/youtube/search', window.location.origin);
+    const url = new URL('/api/youtube/search', API_BASE);
     url.searchParams.set('title', trackName);
     url.searchParams.set('artist', artistName);
     const res = await fetch(url.toString());
