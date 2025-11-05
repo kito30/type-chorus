@@ -51,13 +51,21 @@ const Profile: React.FC = () => {
       } catch {
       }
     }
-    // New storage for highest scores
     const storedScores = localStorage.getItem("profile.scores");
     if (storedScores) {
       try {
         const parsed: ScoredSong[] = JSON.parse(storedScores);
-        const sorted = [...parsed].sort((a, b) => (b.score || 0) - (a.score || 0));
-        setHighestScoredSongs(sorted);
+        const bestById = new Map<number, ScoredSong>();
+        for (const entry of parsed) {
+          const existing = bestById.get(entry.id);
+          if (!existing || (entry.score || 0) > (existing.score || 0)) {
+            bestById.set(entry.id, entry);
+          }
+        }
+        const unique = Array.from(bestById.values());
+        const sorted = unique.sort((a, b) => (b.score || 0) - (a.score || 0));
+        const top5 = sorted.slice(0, 5);
+        setHighestScoredSongs(top5);
       } catch {
       }
     }
@@ -113,6 +121,12 @@ const Profile: React.FC = () => {
 
   return (
     <div className="profile-page">
+      <header className="flex items-center justify-between w-full px-6 py-4">
+        <button className="text-(--color-text) hover:opacity-80" onClick={() => navigate('/')}>
+          ← Back
+        </button>
+        <div />
+      </header>
       <div className="profile-column">
         <header className="profile-header">
           <h1 className="profile-title">PROFILE</h1>
@@ -150,17 +164,23 @@ const Profile: React.FC = () => {
           <h3 className="section-header">Recently Played</h3>
           {recentSong ? (
             <div 
-              className="recent-card spotlight" 
-              onClick={() => navigate(`/game/${recentSong.id}`)}
+              className="recent-card spotlight"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
             >
-              <div className="recent-song-info">
+              <div className="recent-song-info" style={{ paddingRight: 12 }}>
                 <div className="recent-song-title">{recentSong.trackName}</div>
                 <div className="recent-song-artist">{recentSong.artistName}</div>
                 {recentSong.albumName && (
                   <div className="recent-song-album">{recentSong.albumName}</div>
                 )}
               </div>
-              <div className="recent-play-arrow">→</div>
+              <button 
+                className="link-btn"
+                onClick={() => navigate(`/song/${recentSong.id}`)}
+                style={{ marginLeft: 'auto' }}
+              >
+                Play again
+              </button>
             </div>
           ) : (
             <div className="recent-card spotlight muted-text">
@@ -178,7 +198,6 @@ const Profile: React.FC = () => {
                 <div 
                   key={song.id || index}
                   className="score-card spotlight"
-                  onClick={() => navigate(`/game/${song.id}`)}
                 >
                   <div className="score-rank">#{index + 1}</div>
                   <div className="score-song-info">
@@ -186,6 +205,13 @@ const Profile: React.FC = () => {
                     <div className="score-song-artist">{song.artistName}</div>
                   </div>
                   <div className="score-value">{song.score}</div>
+                  <button 
+                    className="link-btn"
+                    onClick={() => navigate(`/song/${song.id}`)}
+                    style={{ marginLeft: 12 }}
+                  >
+                    Play again
+                  </button>
                 </div>
               ))}
             </div>
