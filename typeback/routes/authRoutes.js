@@ -42,6 +42,28 @@ authRouter.post('/login', async (req, res) => {
   const token = signToken({ sub: user.id, username: user.username });
   return res.json({ token, user });
 });
+authRouter.put('/update-username', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const { username } = req.body || {};
+    if (!userId) return res.status(401).json({ error: 'unauthorized' });
+    if (!username || typeof username !== 'string' || username.trim().length < 2) {
+      return res.status(400).json({ error: 'invalid username' });
+    }
+    const existing = await User.findOne({ username }).lean();
+    if (existing && existing._id.toString() !== userId) {
+      return res.status(409).json({ error: 'username already taken' });
+    }
+    await User.updateOne({ _id: userId }, { username: username.trim() });
+    const row = await User.findById(userId);
+    if (!row) return res.status(404).json({ error: 'user not found' });
+    const updated = row.toJSON();
+    return res.json({ message: 'username updated', user: updated });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ error: 'failed to update username' });
+  }
+});
 authRouter.put('/change-password', authMiddleware, async (req, res) => {
   const { username, password } = req.body || {};
   if (!username || !password) return res.status(400).json({ error: 'username and password are required' });

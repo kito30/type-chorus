@@ -230,7 +230,7 @@ npm run dev
 
 ---
 
-## Test Credentials
+## Website login Credentials
 
 Use the following credentials for manual testing:
 
@@ -241,3 +241,21 @@ Use the following credentials for manual testing:
 
 > Note: These are for development/testing only. Do not use in production.
 
+## Test running info
+- # Typefront (frontend)
+
+  - # Install once:
+    - cd typefront
+    - npm i -D vitest @testing-library/react @testing-library/user-event jsdom
+
+  - # Run all tests (watch):
+    - npx vitest --environment jsdom
+
+- # Typeback (backend)
+
+  - # Install once:
+    - cd typeback
+    - npm i -D vitest
+
+  - # Run all tests (watch):
+    - npx vitest
