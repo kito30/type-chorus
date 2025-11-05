@@ -1,6 +1,7 @@
-const API_BASE = (import.meta as any)?.env?.VITE_API_BASE || (typeof window !== 'undefined' ? window.location.origin : '');
 // Allow a dedicated LRC backend base separate from the main API base
-const LRC_BASE = (import.meta as any)?.env?.VITE_LRC_BASE || API_BASE;
+const LRC_BASE = import.meta.env.VITE_LRC_BASE;
+// If pointing directly to lrclib.net, use their native /api/* routes; else assume proxy under /api/lrc/*
+const lrcPrefix = (LRC_BASE || '').includes('lrclib.net') ? '/api' : '/api/lrc'
 import type { SongInfo, SongSearchResult } from '../types/music'
 
 type RawSearchItem = {
@@ -20,7 +21,7 @@ export async function searchSongs(params: {
   album_name?: string
   duration?: number
 }): Promise<SongSearchResult[]> {
-  const url = new URL('/api/lrc/search', LRC_BASE)
+  const url = new URL(`${lrcPrefix}/search`, LRC_BASE)
   for (const [key, value] of Object.entries(params)) {
     if (value !== undefined && value !== null && String(value).length > 0) {
       url.searchParams.set(key, String(value))
@@ -46,14 +47,14 @@ export async function searchSongs(params: {
 }
 
 export async function getSongInfoById(id: number): Promise<SongInfo> {
-  const url = new URL(`/api/lrc/get/${id}`, LRC_BASE)
+  const url = new URL(`${lrcPrefix}/get/${id}`, LRC_BASE)
   const res = await fetch(url.toString(), { headers: buildHeaders() })
   if (!res.ok) throw new Error(`Get by id failed (${res.status})`)
   return (await res.json()) as SongInfo
 }
 
 export async function getLyricsById(id: number): Promise<SongInfo> {
-  const url = new URL(`/api/lrc/get/${id}`, LRC_BASE)
+  const url = new URL(`${lrcPrefix}/get/${id}`, LRC_BASE)
   const res = await fetch(url.toString(), { headers: buildHeaders() })
   if (!res.ok) throw new Error(`Get by id failed (${res.status})`)
   return (await res.json()) as SongInfo
@@ -65,7 +66,7 @@ export async function getLyricsBySignature(params: {
   album_name: string
   duration: number
 }): Promise<SongInfo> {
-  const url = new URL('/api/lrc/get', LRC_BASE)
+  const url = new URL(`${lrcPrefix}/get`, LRC_BASE)
   for (const [key, value] of Object.entries(params)) {
     url.searchParams.set(key, String(value))
   }
@@ -80,7 +81,7 @@ export async function getLyricsBySignatureCached(params: {
   album_name: string
   duration: number
 }): Promise<SongInfo> {
-  const url = new URL('/api/lrc/get-cached', LRC_BASE)
+  const url = new URL(`${lrcPrefix}/get-cached`, LRC_BASE)
   for (const [key, value] of Object.entries(params)) {
     url.searchParams.set(key, String(value))
   }
@@ -92,9 +93,10 @@ export async function getLyricsBySignatureCached(params: {
 function buildHeaders(): HeadersInit {
   const appName = import.meta.env.VITE_APP_NAME || 'TypeChorus'
   const appVersion = import.meta.env.VITE_APP_VERSION || 'dev'
-  return {
-    'X-Client-Info': `${appName} v${appVersion}`,
-  }
+  // LRCLIB allows 'lrclib-client' or 'x-user-agent'
+  return (LRC_BASE || '').includes('lrclib.net')
+    ? { 'lrclib-client': `${appName} v${appVersion}` }
+    : { 'X-Client-Info': `${appName} v${appVersion}` }
 }
 
 
