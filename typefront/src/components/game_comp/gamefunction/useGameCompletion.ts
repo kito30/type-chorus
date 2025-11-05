@@ -1,3 +1,4 @@
+import { useAuth } from '../../../contexts/AuthContextType'
 interface GameRecord {
   id: number
   trackName: string
@@ -6,6 +7,8 @@ interface GameRecord {
 }
 
 export function useGameCompletion() {
+  const { user } = useAuth()
+  const userId = user?.id || 'anon'
   const saveRecentSong = (record: GameRecord) => {
     const songInfo = {
       id: record.id,
@@ -14,12 +17,13 @@ export function useGameCompletion() {
       albumName: record.albumName,
       playedAt: Date.now(),
     }
-    localStorage.setItem('profile.recentSong', JSON.stringify(songInfo))
+    const key = `profile.recentSong.${userId}`
+    localStorage.setItem(key, JSON.stringify(songInfo))
   }
 
   const saveScore = (record: GameRecord, score: number) => {
     try {
-      const key = 'profile.scores'
+      const key = `profile.scores.${userId}`
       const raw = localStorage.getItem(key)
       const list: Array<{ id: number; trackName: string; artistName: string; albumName?: string; score: number; playedAt: number }>
         = raw ? JSON.parse(raw) : []
