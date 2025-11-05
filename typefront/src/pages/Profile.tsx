@@ -16,6 +16,15 @@ type RecentSong = {
   playedAt: number;
 };
 
+type ScoredSong = {
+  id: number;
+  trackName: string;
+  artistName: string;
+  albumName?: string;
+  playedAt: number;
+  score: number;
+};
+
 const Profile: React.FC = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading, isAuthenticated, logout, token, updateUser } = useAuth();
@@ -25,7 +34,7 @@ const Profile: React.FC = () => {
   const [isEmailModalOpen, setIsEmailModalOpen] = useState<boolean>(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState<boolean>(false);
   const [recentSong, setRecentSong] = useState<RecentSong | null>(null);
-  const [highestScoredSongs, setHighestScoredSongs] = useState<RecentSong[]>([]);
+  const [highestScoredSongs, setHighestScoredSongs] = useState<ScoredSong[]>([]);
 
   useEffect(() => {
     if (user) {
@@ -42,10 +51,12 @@ const Profile: React.FC = () => {
       } catch {
       }
     }
-    const storedHighestScores = localStorage.getItem("profile.highestScoredSongs");
-    if (storedHighestScores) {
+    // New storage for highest scores
+    const storedScores = localStorage.getItem("profile.scores");
+    if (storedScores) {
       try {
-        setHighestScoredSongs(JSON.parse(storedHighestScores));
+        const parsed: ScoredSong[] = JSON.parse(storedScores);
+        setHighestScoredSongs(parsed);
       } catch {
       }
     }
@@ -173,7 +184,7 @@ const Profile: React.FC = () => {
                     <div className="score-song-title">{song.trackName}</div>
                     <div className="score-song-artist">{song.artistName}</div>
                   </div>
-                  <div className="score-value">---</div>
+                  <div className="score-value">{song.score}</div>
                 </div>
               ))}
             </div>
@@ -223,7 +234,7 @@ const Profile: React.FC = () => {
         onSave={handleEmailSave}
       />
 
-      <ResetPasswordModal isOpen={isResetModalOpen} email={email} onClose={closeResetModal} />
+      <ResetPasswordModal isOpen={isResetModalOpen} onClose={closeResetModal} />
     </div>
   );
 };

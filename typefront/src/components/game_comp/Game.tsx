@@ -33,7 +33,7 @@ export default function Game({ songId }: { songId: number }) {
   const { score, combo, correctChars, wrongChars, startedAtMs, resetAll, onInputChange, onSpace, onWordSubmit } = useScoring()
 
   // Game completion handling
-  const { saveRecentSong } = useGameCompletion()
+  const { saveRecentSong, saveScore } = useGameCompletion()
 
   // Sync lyrics to YouTube time
   const LEAD_MS = 200
@@ -93,6 +93,14 @@ export default function Game({ songId }: { songId: number }) {
     }
   }, [canType, currentIndex, phase])
 
+  // Blur and disable interactions when finished
+  useEffect(() => {
+    if (phase === 'finished') {
+      try { inputRef.current?.blur() } catch {}
+      pauseVideo()
+    }
+  }, [phase])
+
   function handleStart() {
     if (lines.length === 0) return
     startPhase()
@@ -106,6 +114,16 @@ export default function Game({ songId }: { songId: number }) {
     resetLineIndex()
     resetAll(false) // Don't start timer - wait for Start button
     restartVideo()
+  }
+
+  function handleEnd() {
+    // Manually end the song while playing
+    finishPhase()
+    pauseVideo()
+    if (record) {
+      saveRecentSong(record)
+      saveScore(record, score)
+    }
   }
 
   function handleInputChange(next: string) {
@@ -146,6 +164,7 @@ export default function Game({ songId }: { songId: number }) {
                   phase={phase}
                   onStart={handleStart}
                   onRestart={handleRestart}
+                  onEnd={handleEnd}
                 />
                 <ScoreHud score={score} combo={combo} correctChars={correctChars} wrongChars={wrongChars} startedAtMs={startedAtMs} />
                 <LyricsDisplay
