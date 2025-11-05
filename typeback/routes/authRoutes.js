@@ -64,6 +64,63 @@ authRouter.put('/update-username', authMiddleware, async (req, res) => {
     return res.status(500).json({ error: 'failed to update username' });
   }
 });
+
+// Save recent song for current user
+authRouter.post('/me/recent-song', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const { id, trackName, artistName, albumName, playedAt } = req.body || {};
+    if (!userId) return res.status(401).json({ error: 'unauthorized' });
+    if (!id || !trackName || !artistName) return res.status(400).json({ error: 'invalid payload' });
+    await User.updateOne({ _id: userId }, { recentSong: { id, trackName, artistName, albumName, playedAt: playedAt || Date.now() } });
+    const row = await User.findById(userId).lean();
+    return res.json({ recentSong: row?.recentSong || null });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ error: 'failed to save recent song' });
+  }
+});
+
+// Save a score entry for current user
+authRouter.post('/me/score', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const { id, trackName, artistName, albumName, score, playedAt } = req.body || {};
+    if (!userId) return res.status(401).json({ error: 'unauthorized' });
+    if (!id || !trackName || !artistName || typeof score !== 'number') return res.status(400).json({ error: 'invalid payload' });
+    const entry = { id, trackName, artistName, albumName, score, playedAt: playedAt || Date.now() };
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: 'user not found' });
+    const existing = Array.isArray(user.scores) ? user.scores : [];
+    existing.push(entry);
+    existing.sort((a, b) => b.score - a.score);
+    user.scores = existing.slice(0, 50);
+    await user.save();
+    return res.json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ error: 'failed to save score' });
+  }
+});
+
+// Fetch activity: recent song and top scores
+authRouter.get('/me/activity', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const user = await User.findById(userId).lean();
+    if (!user) return res.status(404).json({ error: 'user not found' });
+    const bestById = new Map();
+    for (const s of user.scores || []) {
+      const prev = bestById.get(s.id);
+      if (!prev || s.score > prev.score) bestById.set(s.id, s);
+    }
+    const unique = Array.from(bestById.values()).sort((a, b) => b.score - a.score).slice(0, 5);
+    return res.json({ recentSong: user.recentSong || null, topScores: unique });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ error: 'failed to fetch activity' });
+  }
+});
 authRouter.put('/change-password', authMiddleware, async (req, res) => {
   const { username, password } = req.body || {};
   if (!username || !password) return res.status(400).json({ error: 'username and password are required' });
