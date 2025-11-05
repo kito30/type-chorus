@@ -8,20 +8,10 @@ import { connectDb } from './db.js'
 
 const app = express()
 const port = process.env.PORT ? Number(process.env.PORT) : 3000
-const host = process.env.HOST 
-const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN 
-const ALLOWED_ORIGINS = new Set([
-  FRONTEND_ORIGIN,
-])
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN
 
 // Middleware
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true)
-    if (ALLOWED_ORIGINS.has(origin)) return callback(null, true)
-    return callback(null, false)
-  },
-}))
+app.use(cors({ origin: FRONTEND_ORIGIN || true }))
 app.use(express.json())
 
 // Health
@@ -53,7 +43,8 @@ process.on('uncaughtException', (err) => {
 const start = async () => {
   try {
     await connectDb();
-    app.listen(port, host, () => console.log(`API server listening on http://${host}:${port}`))
+    // Bind on all interfaces for Render; don't pass a host arg
+    app.listen(port, () => console.log(`API server listening on port ${port}`))
   } catch (err) {
     console.error('Failed to start server:', err)
     process.exit(1)
