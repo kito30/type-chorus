@@ -8,12 +8,10 @@ import { connectDb } from './db.js'
 
 const app = express()
 const port = process.env.PORT ? Number(process.env.PORT) : 3000
-const host = process.env.HOST || '127.0.0.1'
-const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || 'http://localhost:5173'
+const host = process.env.HOST 
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN 
 const ALLOWED_ORIGINS = new Set([
   FRONTEND_ORIGIN,
-  'http://127.0.0.1:5173',
-  'http://localhost:5173',
 ])
 
 // Middleware
