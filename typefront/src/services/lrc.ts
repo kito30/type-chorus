@@ -1,5 +1,8 @@
 // Allow a dedicated LRC backend base separate from the main API base
-const LRC_BASE = import.meta.env.LRC_BASE;
+const LRC_BASE =
+  import.meta.env?.VITE_LRC_BASE ||
+  import.meta.env?.VITE_BACKEND_BASE ||
+  (typeof window !== 'undefined' ? window.location.origin : '');
 // If pointing directly to lrclib.net, use their native /api/* routes; else assume proxy under /api/lrc/*
 const lrcPrefix = (LRC_BASE || '').includes('lrclib.net') ? '/api' : '/api/lrc'
 import type { SongInfo, SongSearchResult } from '../types/music'

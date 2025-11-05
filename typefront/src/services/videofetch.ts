@@ -1,5 +1,8 @@
 import type { SongInfo } from "../types/music";
-const API_BASE = import.meta.env.API_BASE
+const API_BASE =
+  import.meta.env?.VITE_BACKEND_BASE ||
+  import.meta.env?.VITE_API_BASE ||
+  (typeof window !== 'undefined' ? window.location.origin : '');
 
 type VideoSearchResult = {
   videoId: string;

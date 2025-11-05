@@ -1,5 +1,8 @@
-// Prefer BACKEND_BASE; fall back to legacy VITE_API_BASE, then same-origin
-const API_BASE = import.meta.env.API_BASE;
+// Prefer VITE_BACKEND_BASE; fall back to legacy VITE_API_BASE, then same-origin
+const API_BASE =
+  import.meta.env?.VITE_BACKEND_BASE ||
+  import.meta.env?.VITE_API_BASE ||
+  (typeof window !== 'undefined' ? window.location.origin : '');
 
 export interface User {
   id: string;
