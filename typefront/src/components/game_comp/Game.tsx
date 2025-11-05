@@ -96,7 +96,9 @@ export default function Game({ songId }: { songId: number }) {
   // Blur and disable interactions when finished
   useEffect(() => {
     if (phase === 'finished') {
-      try { inputRef.current?.blur() } catch {}
+      try { inputRef.current?.blur() } catch {
+        // Ignore errors on blur
+      }
       pauseVideo()
     }
   }, [phase])
