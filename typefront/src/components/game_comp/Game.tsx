@@ -1,5 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
-import { createYouTubeController, type YouTubeController } from './gamefunction/videofunction'
+import { useWordProgress } from './gamefunction/useWordProgress'
+import { useScoring } from './gamefunction/useScoring'
+import { useLyricSync } from './gamefunction/useLyricSync'
+import { useVideoControl } from './gamefunction/useVideoControl'
+import { useGamePhase } from './gamefunction/useGamePhase'
+import { useLineAdvancement } from './gamefunction/useLineAdvancement'
+import { useInputValidation } from './gamefunction/useInputValidation'
+import { useGameCompletion } from './gamefunction/useGameCompletion'
+import ScoreHud from './ScoreHud'
 import GameTitle from './GameTitle'
 import LyricsDisplay from './LyricsDisplay'
 import GameInput from './GameInput'
@@ -8,142 +16,119 @@ import GameHeader from './GameHeader'
 import VideoCard from './VideoCard'
 import { useGameData } from './gamefunction/useGameData'
 
-type Phase = 'idle' | 'countdown' | 'playing' | 'finished'
-
 export default function Game({ songId }: { songId: number }) {
   const { record, videoId, lines, timedLines, isLoading, error } = useGameData(songId)
-  const [phase, setPhase] = useState<Phase>('idle')
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [input, setInput] = useState('')
-  const [score, setScore] = useState(0)
-  const [combo, setCombo] = useState(0)
-  const [correctChars, setCorrectChars] = useState(0)
-  const [wrongChars, setWrongChars] = useState(0)
-  const [startedAtMs, setStartedAtMs] = useState<number | null>(null)
-  const [lineStartedAtMs, setLineStartedAtMs] = useState<number | null>(null)
-  const wrongIndicesRef = useRef<Set<number>>(new Set())
+  const [mountKey] = useState(() => Date.now())
   const visibleCount = 5
   const inputRef = useRef<HTMLInputElement | null>(null)
   const iframeRef = useRef<HTMLIFrameElement | null>(null)
-  const controllerRef = useRef<YouTubeController | null>(null)
 
+  // Game phase management
+  const { phase, start: startPhase, finish: finishPhase, reset: resetPhase } = useGamePhase()
 
+  // Video control
+  const { startVideo, restartVideo, pauseVideo } = useVideoControl(iframeRef)
+
+  // Scoring
+  const { score, combo, correctChars, wrongChars, startedAtMs, resetAll, onInputChange, onSpace, onWordSubmit } = useScoring()
+
+  // Game completion handling
+  const { saveRecentSong } = useGameCompletion()
+
+  // Sync lyrics to YouTube time
+  const LEAD_MS = 200
+  const { currentIndex: syncedIndex, canType } = useLyricSync({
+    timedLines,
+    videoId,
+    iframeRef,
+    leadMs: LEAD_MS,
+    enabled: phase === 'playing',
+  })
+
+  // Line advancement logic
+  const { currentIndex, tryAdvanceToNext, reset: resetLineIndex } = useLineAdvancement({
+    syncedIndex,
+    totalLines: lines.length,
+    onAllLinesComplete: () => {
+      finishPhase()
+      if (record) {
+        saveRecentSong(record)
+      }
+    },
+  })
+
+  // Word progress for current line
+  const activeLine = lines[currentIndex] ?? ''
+  const { input, wordIndex, typedWords, words, handleChange, handleSpace } = useWordProgress(activeLine)
+
+  // Input validation
+  const { canProcessInput, canProcessSpace } = useInputValidation({
+    phase,
+    canType,
+    wordIndex,
+    words,
+    typedWords,
+    currentIndex,
+    syncedIndex,
+  })
+
+  // Initialize video controller on mount
+  useEffect(() => {
+    pauseVideo()
+    resetLineIndex()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Focus input when phase changes to playing
   useEffect(() => {
     if (phase === 'playing') {
       inputRef.current?.focus()
     }
   }, [phase])
 
-
+  // Auto-focus when typing window opens
   useEffect(() => {
-    if (iframeRef.current) {
-      controllerRef.current = createYouTubeController(iframeRef.current)
+    if (phase === 'playing' && canType) {
+      inputRef.current?.focus()
     }
-  }, [iframeRef.current])
-
-
-  const activeLine = lines[currentIndex] ?? ''
+  }, [canType, currentIndex, phase])
 
   function handleStart() {
     if (lines.length === 0) return
-    setPhase('playing')
-    setInput('')
-    setScore(0)
-    setCombo(0)
-    setCorrectChars(0)
-    setWrongChars(0)
-    setStartedAtMs(Date.now())
-    setLineStartedAtMs(Date.now())
-    wrongIndicesRef.current = new Set()
-    try {
-      controllerRef.current?.seekTo(0, true)
-      setTimeout(() => controllerRef.current?.play(), 100)
-    } catch {
-    }
+    startPhase()
+    resetAll()
+    resetLineIndex()
+    startVideo()
   }
 
   function handleRestart() {
-    setPhase('idle')
-    setCurrentIndex(0)
-    setInput('')
-    setScore(0)
-    setCombo(0)
-    setCorrectChars(0)
-    setWrongChars(0)
-    setStartedAtMs(null)
-    setLineStartedAtMs(null)
-    wrongIndicesRef.current = new Set()
-    try {
-      controllerRef.current?.seekTo(0, true)
-      controllerRef.current?.pause()
-    } catch {
-    }
+    resetPhase()
+    resetLineIndex()
+    resetAll(false) // Don't start timer - wait for Start button
+    restartVideo()
   }
 
   function handleInputChange(next: string) {
-    if (phase !== 'playing') return
-    const prev = input
-    if (next.length > prev.length) {
-      const addedIndex = next.length - 1
-      const addedChar = next.charAt(addedIndex)
-      const expectedChar = activeLine.charAt(addedIndex)
-      if (addedChar === expectedChar) {
-        setCorrectChars((c) => c + 1)
-        const nextCombo = combo + 1
-        setCombo(nextCombo)
-        const multiplier = nextCombo >= 50 ? 2 : nextCombo >= 25 ? 1.5 : nextCombo >= 10 ? 1.2 : 1
-        setScore((s) => s + Math.round(1 * multiplier))
-      } else {
-        if (!wrongIndicesRef.current.has(addedIndex)) {
-          wrongIndicesRef.current.add(addedIndex)
-          setWrongChars((w) => w + 1)
-          setCombo(0)
-          setScore((s) => s - 1)
-        }
-      }
-    }
-    if (next.length < prev.length) {
-      const keep = new Set<number>()
-      wrongIndicesRef.current.forEach((idx) => {
-        if (idx < next.length) keep.add(idx)
-      })
-      wrongIndicesRef.current = keep
-    }
-    setInput(next)
-    if (next === activeLine) {
-      setCurrentIndex((i) => i + 1)
-      setInput('')
-      const now = Date.now()
-      const elapsed = lineStartedAtMs ? now - lineStartedAtMs : 0
-      let windowMs = 3000
-      if (timedLines && timedLines[currentIndex] && timedLines[currentIndex + 1]) {
-        const start = timedLines[currentIndex].timeMs
-        const end = timedLines[currentIndex + 1].timeMs
-        windowMs = Math.max(1000, end - start)
-      }
-      const ratio = Math.max(0, Math.min(1, 1 - (elapsed / windowMs)))
-      const baseBonus = 50
-      const bonusRaw = baseBonus * ratio
-      const currentCombo = combo
-      const multiplier = currentCombo >= 50 ? 2 : currentCombo >= 25 ? 1.5 : currentCombo >= 10 ? 1.2 : 1
-      setScore((s) => s + Math.round(bonusRaw * multiplier))
-      wrongIndicesRef.current = new Set()
-      setLineStartedAtMs(now)
-      if (currentIndex + 1 >= lines.length) {
-        setPhase('finished')
-        if (record) {
-          const songInfo = {
-            id: record.id,
-            trackName: record.trackName,
-            artistName: record.artistName,
-            albumName: record.albumName,
-            playedAt: Date.now()
-          }
-          localStorage.setItem('profile.recentSong', JSON.stringify(songInfo))
-        }
-      }
+    if (!canProcessInput()) return
+    onInputChange(words[wordIndex] || '', next)
+    handleChange(next)
+  }
+
+  function handleAdvanceOnWord(chunk: string) {
+    if (!canProcessSpace()) return
+
+    // Score the word
+    onWordSubmit(words[wordIndex] || '', chunk)
+    const { lineCompleted } = handleSpace(chunk)
+    onSpace()
+
+    // Try to advance to next line if completed
+    if (lineCompleted) {
+      tryAdvanceToNext()
     }
   }
+
+  
 
   return (
     <>
@@ -154,7 +139,7 @@ export default function Game({ songId }: { songId: number }) {
           <GameHeader artistName={record.artistName} />
           <div className="w-full mx-auto px-6 pt-0 pb-6">
             <div className="flex flex-col items-center gap-12">
-              <VideoCard videoId={videoId} iframeRef={iframeRef} />
+              <VideoCard videoId={videoId} iframeRef={iframeRef} reloadKey={mountKey} />
               <div className="flex flex-col items-center gap-6">
                 <GameTitle
                   trackName={record.trackName}
@@ -162,57 +147,24 @@ export default function Game({ songId }: { songId: number }) {
                   onStart={handleStart}
                   onRestart={handleRestart}
                 />
-                <div className="fixed right-6 top-16 z-20 flex flex-col items-end gap-3">
-                  <div className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-(--color-card-bg, #101114) border border-gray-700 shadow-lg">
-                    <span className="uppercase tracking-wide text-xs opacity-70">Score</span>
-                    <span className="text-2xl font-extrabold">{score}</span>
-                  </div>
-                  <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-(--color-card-bg, #101114) border border-gray-700 shadow">
-                    <span className="uppercase tracking-wide text-xs opacity-70">Combo</span>
-                    <span className="text-lg font-bold">{combo}</span>
-                  </div>
-                  <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-(--color-card-bg, #101114) border border-gray-700 shadow">
-                    <span className="uppercase tracking-wide text-xs opacity-70">Accuracy</span>
-                    <span className="text-lg font-bold">
-                      {(() => {
-                        const total = correctChars + wrongChars
-                        return total === 0 ? '100%' : `${Math.round((correctChars / total) * 100)}%`
-                      })()}
-                    </span>
-                  </div>
-                  <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-(--color-card-bg, #101114) border border-gray-700 shadow">
-                    <span className="uppercase tracking-wide text-xs opacity-70">WPM</span>
-                    <span className="text-lg font-bold">
-                      {(() => {
-                        const start = startedAtMs
-                        if (!start) return 0
-                        const minutes = Math.max(0.001, (Date.now() - start) / 60000)
-                        return Math.round((correctChars / 5) / minutes)
-                      })()}
-                    </span>
-                  </div>
-                </div>
+                <ScoreHud score={score} combo={combo} correctChars={correctChars} wrongChars={wrongChars} startedAtMs={startedAtMs} />
                 <LyricsDisplay
                   timedLines={timedLines}
-                  videoId={videoId}
-                  iframeRef={iframeRef}
                   allLines={lines}
                   visibleCount={visibleCount}
-                  onActiveIndexChange={(idx) => {
-                    if (phase !== 'playing') return
-                    if (idx > currentIndex) {
-                      setCurrentIndex(idx)
-                      setInput('')
-                      wrongIndicesRef.current = new Set()
-                      setLineStartedAtMs(Date.now())
-                      if (idx >= lines.length) {
-                        setPhase('finished')
-                      }
-                    }
-                  }}
+                  currentInput={input}
+                  wordIndex={wordIndex}
+                  typedWords={typedWords}
+                  currentLineIndex={currentIndex}
                 />
                 {phase === 'playing' && (
-                  <GameInput ref={inputRef} value={input} onChange={handleInputChange} />
+                  <GameInput
+                    ref={inputRef}
+                    value={input}
+                    onChange={handleInputChange}
+                    onSpace={(chunk) => { handleAdvanceOnWord(chunk) }}
+                    disabled={!canType}
+                  />
                 )}
               </div>
               {phase === 'finished' && (

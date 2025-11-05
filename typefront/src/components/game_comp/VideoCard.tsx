@@ -3,10 +3,12 @@ import VideoController from './VideoController';
 
 export default function VideoCard({ 
   videoId,
-  iframeRef 
+  iframeRef,
+  reloadKey,
 }: { 
   videoId: string;
   iframeRef: React.RefObject<HTMLIFrameElement | null>;
+  reloadKey?: number;
 }) {
     const [iframeEl, setIframeEl] = useState<HTMLIFrameElement | null>(null); // ref for controller
     const [iframeLoaded, setIframeLoaded] = useState(false);
@@ -36,7 +38,9 @@ export default function VideoCard({
         <div className="flex flex-col items-center w-full max-w-2xl">
             <div className="aspect-video w-full max-w-2xl rounded-md border-3 border-amber-100">
                 <iframe
+                    key={reloadKey}
                     ref={iframeRef}
+                    id="game-yt-iframe"
                     className="w-full h-full"
                     src={src}
                     title="YouTube video"

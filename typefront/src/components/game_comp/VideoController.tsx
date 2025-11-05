@@ -20,7 +20,6 @@ export default function VideoController({ iframe, isLoaded }: { iframe: HTMLIFra
         }
     }, [controller, volume, isLoaded]); // Run when iframe is loaded
 
-    const play = () => controller.play();
     const pause = () => controller.pause();
     const mute = () => controller.mute();
     const unmute = () => controller.unmute();
@@ -32,7 +31,6 @@ export default function VideoController({ iframe, isLoaded }: { iframe: HTMLIFra
 
     return (
         <div className="mt-2 flex items-center gap-2">
-            <button className="px-3 py-1 rounded bg-blue-600 text-white" onClick={play}>Play</button>
             <button className="px-3 py-1 rounded bg-gray-600 text-white" onClick={pause}>Pause</button>
             <button className="px-3 py-1 rounded bg-yellow-600 text-white" onClick={mute}>Mute</button>
             <button className="px-3 py-1 rounded bg-green-600 text-white" onClick={unmute}>Unmute</button>

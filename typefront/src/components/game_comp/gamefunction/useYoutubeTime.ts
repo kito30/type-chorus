@@ -34,9 +34,10 @@ export function useYoutubeTime( iframeRef: React.RefObject<HTMLIFrameElement | n
         const init  = () => {
             const el = iframeRef.current
             if(el && !playerRef.current) {
+                // Attach to existing iframe by its id to avoid recreating/replacing it
+                const id = el.id 
                 // Minimal config to satisfy our local types
-                // We attach onReady via a setTimeout to avoid typing issues
-                playerRef.current = new window.YT.Player(el, { videoId });
+                playerRef.current = new window.YT.Player(id, { videoId });
                 // Poll until player exposes getCurrentTime (ready enough)
                 const waitId = setInterval(() => {
                     if (playerRef.current && typeof playerRef.current.getCurrentTime === 'function') {
