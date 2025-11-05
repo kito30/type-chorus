@@ -44,14 +44,18 @@ const Profile: React.FC = () => {
   }, [user]);
 
   useEffect(() => {
-    const storedRecentSong = localStorage.getItem("profile.recentSong");
+    const userId = user?.id || 'anon'
+    const recentKey = `profile.recentSong.${userId}`
+    const scoresKey = `profile.scores.${userId}`
+
+    const storedRecentSong = localStorage.getItem(recentKey);
     if (storedRecentSong) {
       try {
         setRecentSong(JSON.parse(storedRecentSong));
       } catch {
       }
     }
-    const storedScores = localStorage.getItem("profile.scores");
+    const storedScores = localStorage.getItem(scoresKey);
     if (storedScores) {
       try {
         const parsed: ScoredSong[] = JSON.parse(storedScores);
@@ -69,7 +73,7 @@ const Profile: React.FC = () => {
       } catch {
       }
     }
-  }, []);
+  }, [user]);
 
   const openUsernameModal = () => setIsUsernameModalOpen(true);
   const closeUsernameModal = () => setIsUsernameModalOpen(false);

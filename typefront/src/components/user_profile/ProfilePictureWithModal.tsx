@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useAuth } from "../../contexts/AuthContextType";
 import ImageModal from "./ImageModal";
 import "../../styles/Profile.css";
 
@@ -6,19 +7,23 @@ const DEFAULT_PIC =
   "https://cdn-icons-png.flaticon.com/512/847/847969.png";
 
 const ProfilePictureWithModal: React.FC = () => {
+  const { user } = useAuth();
+  const userId = user?.id || 'anon';
   const [imageUrl, setImageUrl] = useState<string>(DEFAULT_PIC);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem("profile.imageUrl");
+    const key = `profile.imageUrl.${userId}`;
+    const stored = localStorage.getItem(key);
     if (stored) setImageUrl(stored);
-  }, []);
+  }, [userId]);
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
   const handleSave = (newUrl: string) => {
     setImageUrl(newUrl);
-    localStorage.setItem("profile.imageUrl", newUrl);
+    const key = `profile.imageUrl.${userId}`;
+    localStorage.setItem(key, newUrl);
   };
 
   return (

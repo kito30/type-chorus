@@ -9,21 +9,23 @@ const Home: React.FC = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [profileImageUrl, setProfileImageUrl] = useState<string>("https://cdn-icons-png.flaticon.com/512/847/847969.png");
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (isAuthenticated) {
-      const stored = localStorage.getItem("profile.imageUrl");
-      if (stored) {
-        setProfileImageUrl(stored);
+      const userId = user?.id || 'anon'
+      const key = `profile.imageUrl.${userId}`
+      const stored = localStorage.getItem(key)
+      if (stored && stored.trim().length > 0) {
+        setProfileImageUrl(stored)
       } else {
-        setProfileImageUrl("https://cdn-icons-png.flaticon.com/512/847/847969.png");
+        setProfileImageUrl("https://cdn-icons-png.flaticon.com/512/847/847969.png")
       }
     } else {
-      setProfileImageUrl("https://cdn-icons-png.flaticon.com/512/847/847969.png");
+      setProfileImageUrl("https://cdn-icons-png.flaticon.com/512/847/847969.png")
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
