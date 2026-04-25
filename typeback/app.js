@@ -3,10 +3,18 @@ import cors from 'cors'
 import youtubeRoutes from './routes/youtubeRoutes.js'
 import { authRouter } from './routes/authRoutes.js'
 import { authMiddleware } from './utils/auth.js'
+import { isDbConnected } from './db.js'
 
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN
 
 const app = express()
+
+function requireDatabase(_req, res, next) {
+  if (isDbConnected()) {
+    return next()
+  }
+  return res.status(503).json({ error: 'database unavailable' })
+}
 
 // Middleware
 app.use(cors({ 
@@ -22,10 +30,10 @@ app.get(['/api/health', '/health'], (_req, res) => {
 })
 
 // Auth
-app.use(['/api/auth', '/auth'], authRouter)
+app.use(['/api/auth', '/auth'], requireDatabase, authRouter)
 
 // Protected current-user route
-app.get(['/api/me', '/me'], authMiddleware, (req, res) => {
+app.get(['/api/me', '/me'], requireDatabase, authMiddleware, (req, res) => {
   res.json({ user: req.user })
 })
 
