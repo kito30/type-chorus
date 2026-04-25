@@ -1,5 +1,14 @@
 import ytsr from 'ytsr'
 
+async function isEmbeddable(videoId) {
+  try {
+    const res = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`)
+    return res.ok
+  } catch {
+    return false
+  }
+}
+
 export async function searchYouTubeVideo(title, artist) {
   const trimmedTitle = String(title || '').trim()
   const trimmedArtist = String(artist || '').trim()
@@ -10,18 +19,22 @@ export async function searchYouTubeVideo(title, artist) {
 
   const query = [trimmedArtist, trimmedTitle].filter(Boolean).join(' ')
   
-  const results = await ytsr(query, { limit: 5 })
+  const results = await ytsr(query, { limit: 10 })
   const videos = results.items.filter(i => i.type === 'video')
-  const pick = videos[0]
 
-  if (!pick) throw new Error(`No video found for: ${query}`)
-
-  return {
-    videoId: pick.id,
-    title: pick.title,
-    channel: pick.author?.name || '',
-    duration: pick.duration || '',
-    queryUsed: query,
-    source: 'ytsr',
+  for (const video of videos) {
+    const embeddable = await isEmbeddable(video.id)
+    if (embeddable) {
+      return {
+        videoId: video.id,
+        title: video.title,
+        channel: video.author?.name || '',
+        duration: video.duration || '',
+        queryUsed: query,
+        source: 'ytsr',
+      }
+    }
   }
+
+  throw new Error(`No embeddable video found for: ${query}`)
 }
