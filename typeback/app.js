@@ -9,7 +9,11 @@ const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN
 const app = express()
 
 // Middleware
-app.use(cors({ origin: FRONTEND_ORIGIN || true }))
+app.use(cors({ 
+  origin: FRONTEND_ORIGIN || '*',
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}))
 app.use(express.json())
 
 // Health
