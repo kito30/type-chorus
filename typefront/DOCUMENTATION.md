@@ -29,6 +29,7 @@ Create `.env` (or copy `env.example`):
 
 ```
 VITE_API_BASE=http://127.0.0.1:3000
+VITE_BACKEND_BASE=
 VITE_APP_NAME=TypeChorus
 VITE_APP_VERSION=dev
 ```
@@ -91,6 +92,7 @@ UI tests live in `src/__tests__/`. Run with your workspace test runner (e.g., Vi
 ## Troubleshooting
 
 - Ensure `VITE_API_BASE` matches the backend `PORT`.
+- On Vercel, do not use `localhost` values; use `VITE_BACKEND_BASE=https://<your-backend-domain>`.
 - CORS errors: confirm backend `FRONTEND_ORIGIN` includes `http://localhost:5173`.
 - YouTube playback: browser autoplay policies may require a user gesture; `useVideoControl` starts muted then unmutes.
 

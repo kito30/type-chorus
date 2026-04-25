@@ -1,34 +1,8 @@
 import 'dotenv/config'
-import express from 'express'
-import youtubeRoutes from './routes/youtubeRoutes.js'
-import cors from 'cors'
-import { authRouter } from './routes/authRoutes.js'
-import { authMiddleware } from './utils/auth.js'
+import app from './app.js'
 import { connectDb } from './db.js'
 
-const app = express()
 const port = process.env.PORT ? Number(process.env.PORT) : 3000
-const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN
-
-// Middleware
-app.use(cors({ origin: FRONTEND_ORIGIN || true }))
-app.use(express.json())
-
-// Health
-app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok' })
-})
-
-// Auth
-app.use('/api/auth', authRouter)
-
-// Protected current-user route
-app.get('/api/me', authMiddleware, (req, res) => {
-  res.json({ user: req.user })
-})
-
-// youtube routes
-app.use('/api', youtubeRoutes)
 
 
 // Start after DB connects

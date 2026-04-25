@@ -1,8 +1,5 @@
 import type { SongInfo } from "../types/music";
-const API_BASE =
-  import.meta.env?.VITE_BACKEND_BASE ||
-  import.meta.env?.VITE_API_BASE ||
-  (typeof window !== 'undefined' ? window.location.origin : '');
+import { API_PATHS, requestJson, toApiUrl } from './apiClient';
 
 type VideoSearchResult = {
   videoId: string;
@@ -13,11 +10,8 @@ type VideoSearchResult = {
 }
 
 export async function fetchVideoInfo({trackName, artistName}: SongInfo): Promise<VideoSearchResult | null> {
-    const url = new URL('/api/youtube/search', API_BASE);
+  const url = toApiUrl(API_PATHS.youtube.search);
     url.searchParams.set('title', trackName);
     url.searchParams.set('artist', artistName);
-    const res = await fetch(url.toString());
-    if (!res.ok) throw new Error(`YouTube search failed: ${res.status}`);
-    const data = (await res.json()) as VideoSearchResult;
-    return data;
+  return requestJson<VideoSearchResult>(url, undefined, 'YouTube search failed');
 }

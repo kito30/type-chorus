@@ -1,11 +1,11 @@
-// Allow a dedicated LRC backend base separate from the main API base
-const LRC_BASE =
-  import.meta.env?.VITE_LRC_BASE ||
-  import.meta.env?.VITE_BACKEND_BASE ||
-  (typeof window !== 'undefined' ? window.location.origin : '');
-// If pointing directly to lrclib.net, use their native /api/* routes; else assume proxy under /api/lrc/*
-const lrcPrefix = (LRC_BASE || '').includes('lrclib.net') ? '/api' : '/api/lrc'
 import type { SongInfo, SongSearchResult } from '../types/music'
+import {
+  API_PATHS,
+  getLrcHeaders,
+  requestJson,
+  setQueryParams,
+  toLrcUrl,
+} from './apiClient'
 
 type RawSearchItem = {
   id: number
@@ -24,18 +24,12 @@ export async function searchSongs(params: {
   album_name?: string
   duration?: number
 }): Promise<SongSearchResult[]> {
-  const url = new URL(`${lrcPrefix}/search`, LRC_BASE)
-  for (const [key, value] of Object.entries(params)) {
-    if (value !== undefined && value !== null && String(value).length > 0) {
-      url.searchParams.set(key, String(value))
-    }
-  }
-  
-  const res = await fetch(url.toString(), { headers: buildHeaders() })
-  if (!res.ok) {
-    throw new Error(`Search failed (${res.status})`)
-  }
-  const data = (await res.json()) as RawSearchItem[]
+  const url = setQueryParams(toLrcUrl(API_PATHS.lrc.search), params)
+  const data = await requestJson<RawSearchItem[]>(
+    url,
+    { headers: getLrcHeaders() },
+    'Search failed'
+  )
   const results: SongSearchResult[] = data.map((item) => ({
     id: item.id,
     trackName: item.trackName,
@@ -50,17 +44,19 @@ export async function searchSongs(params: {
 }
 
 export async function getSongInfoById(id: number): Promise<SongInfo> {
-  const url = new URL(`${lrcPrefix}/get/${id}`, LRC_BASE)
-  const res = await fetch(url.toString(), { headers: buildHeaders() })
-  if (!res.ok) throw new Error(`Get by id failed (${res.status})`)
-  return (await res.json()) as SongInfo
+  return requestJson<SongInfo>(
+    toLrcUrl(API_PATHS.lrc.byId(id)),
+    { headers: getLrcHeaders() },
+    'Get by id failed'
+  )
 }
 
 export async function getLyricsById(id: number): Promise<SongInfo> {
-  const url = new URL(`${lrcPrefix}/get/${id}`, LRC_BASE)
-  const res = await fetch(url.toString(), { headers: buildHeaders() })
-  if (!res.ok) throw new Error(`Get by id failed (${res.status})`)
-  return (await res.json()) as SongInfo
+  return requestJson<SongInfo>(
+    toLrcUrl(API_PATHS.lrc.byId(id)),
+    { headers: getLrcHeaders() },
+    'Get by id failed'
+  )
 }
 
 export async function getLyricsBySignature(params: {
@@ -69,13 +65,12 @@ export async function getLyricsBySignature(params: {
   album_name: string
   duration: number
 }): Promise<SongInfo> {
-  const url = new URL(`${lrcPrefix}/get`, LRC_BASE)
-  for (const [key, value] of Object.entries(params)) {
-    url.searchParams.set(key, String(value))
-  }
-  const res = await fetch(url.toString(), { headers: buildHeaders() })
-  if (!res.ok) throw new Error(`Get failed (${res.status})`)
-  return (await res.json()) as SongInfo
+  const url = setQueryParams(toLrcUrl(API_PATHS.lrc.bySignature), params)
+  return requestJson<SongInfo>(
+    url,
+    { headers: getLrcHeaders() },
+    'Get failed'
+  )
 }
 
 export async function getLyricsBySignatureCached(params: {
@@ -84,22 +79,12 @@ export async function getLyricsBySignatureCached(params: {
   album_name: string
   duration: number
 }): Promise<SongInfo> {
-  const url = new URL(`${lrcPrefix}/get-cached`, LRC_BASE)
-  for (const [key, value] of Object.entries(params)) {
-    url.searchParams.set(key, String(value))
-  }
-  const res = await fetch(url.toString(), { headers: buildHeaders() })
-  if (!res.ok) throw new Error(`Get-cached failed (${res.status})`)
-  return (await res.json()) as SongInfo
-}
-
-function buildHeaders(): HeadersInit {
-  const appName = import.meta.env.VITE_APP_NAME || 'TypeChorus'
-  const appVersion = import.meta.env.VITE_APP_VERSION || 'dev'
-  // LRCLIB allows 'lrclib-client' or 'x-user-agent'
-  return (LRC_BASE || '').includes('lrclib.net')
-    ? { 'lrclib-client': `${appName} v${appVersion}` }
-    : { 'X-Client-Info': `${appName} v${appVersion}` }
+  const url = setQueryParams(toLrcUrl(API_PATHS.lrc.bySignatureCached), params)
+  return requestJson<SongInfo>(
+    url,
+    { headers: getLrcHeaders() },
+    'Get-cached failed'
+  )
 }
 
 

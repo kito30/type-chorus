@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "../../contexts/AuthContextType";
+import { changePassword } from "../../services/auth";
 import "../../styles/Profile.css";
 
 interface ResetPasswordModalProps {
@@ -46,25 +47,7 @@ const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, onClose
     setLoading(true);
 
     try {
-      const API_BASE = import.meta.env?.VITE_API_BASE || 'http://127.0.0.1:3000';
-      const res = await fetch(`${API_BASE}/api/auth/change-password`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          currentPassword,
-          newPassword,
-        }),
-      });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: "Failed to change password" }));
-        setError(err.error || `Failed to change password (${res.status})`);
-        setLoading(false);
-        return;
-      }
+      await changePassword(token, currentPassword, newPassword);
 
       setCurrentPassword("");
       setNewPassword("");

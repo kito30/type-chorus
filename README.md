@@ -86,6 +86,7 @@ npm run dev
 **Required Environment Variables (`.env`):**
 ```env
 VITE_API_BASE=http://127.0.0.1:3000
+VITE_BACKEND_BASE=
 VITE_APP_NAME=TypeChorus
 VITE_APP_VERSION=dev
 ```
