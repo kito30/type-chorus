@@ -131,7 +131,7 @@ authRouter.put('/change-password', authMiddleware, async (req, res) => {
   const ok = await verifyPassword(password, row.password_hash);
   console.log('Password match:', ok);
   if (!ok) return res.status(401).json({ error: 'invalid credentials' });
-  password_hash = await hashPassword(password);
-  await User.updateOne({ username: username }, { password_hash: password_hash });
+  const newHash = await hashPassword(password);
+  await User.updateOne({ username: username }, { password_hash: newHash });
   return res.status(200).json({ message: 'password changed successfully' });
 });

@@ -13,19 +13,19 @@ app.use(cors({ origin: FRONTEND_ORIGIN || true }))
 app.use(express.json())
 
 // Health
-app.get('/api/health', (_req, res) => {
+app.get(['/api/health', '/health'], (_req, res) => {
   res.json({ status: 'ok' })
 })
 
 // Auth
-app.use('/api/auth', authRouter)
+app.use(['/api/auth', '/auth'], authRouter)
 
 // Protected current-user route
-app.get('/api/me', authMiddleware, (req, res) => {
+app.get(['/api/me', '/me'], authMiddleware, (req, res) => {
   res.json({ user: req.user })
 })
 
 // youtube routes
-app.use('/api', youtubeRoutes)
+app.use(['/api', '/'], youtubeRoutes)
 
 export default app
